@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "915074343325",
+    "project_id": "clubjonatanmedrano",
+    "storage_bucket": "clubjonatanmedrano.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:915074343325:android:78ec4824b395411ca10f74",
+        "android_client_info": {
+          "package_name": "com.example.club_jonatan_medrano"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA27Vw9_fdrp4bQRhdZaUk93wjn8kr0i4A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
