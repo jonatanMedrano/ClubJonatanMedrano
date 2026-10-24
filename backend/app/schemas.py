@@ -103,3 +103,4 @@ class ReservaOut(BaseModel):
     hora_fin: time
     total: float
     estado: str
+    proxima: bool = False
