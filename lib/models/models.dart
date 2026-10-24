@@ -29,8 +29,16 @@ class Espacio {
   final String nombre, sede, deporte, apertura, cierre;
   final double precioHora;
   final bool indoor;
-  Espacio(this.id, this.nombre, this.sede, this.deporte, this.apertura,
-      this.cierre, this.precioHora, this.indoor);
+  Espacio(
+    this.id,
+    this.nombre,
+    this.sede,
+    this.deporte,
+    this.apertura,
+    this.cierre,
+    this.precioHora,
+    this.indoor,
+  );
 
   factory Espacio.fromJson(Map<String, dynamic> j) {
     final s = j['sede'], d = j['deporte'];
@@ -51,8 +59,18 @@ class Reserva {
   final int id;
   final String espacio, sede, fecha, inicio, fin, estado;
   final double total;
-  Reserva(this.id, this.espacio, this.sede, this.fecha, this.inicio, this.fin,
-      this.estado, this.total);
+  final bool? proximaApi;
+  Reserva(
+    this.id,
+    this.espacio,
+    this.sede,
+    this.fecha,
+    this.inicio,
+    this.fin,
+    this.estado,
+    this.total, {
+    this.proximaApi,
+  });
 
   factory Reserva.fromJson(Map<String, dynamic> j) {
     final e = j['espacio'];
@@ -65,21 +83,24 @@ class Reserva {
       hhmm(str(j['hora_fin'])),
       str(j['estado']),
       double.tryParse(str(j['total'])) ?? 0,
+      proximaApi: j['proxima'] is bool ? j['proxima'] as bool : null,
     );
   }
 
   bool get cancelada => estado.toLowerCase().startsWith('cancel');
   DateTime get finDt => DateTime.parse('${fecha}T$fin:00');
-  bool get proxima => !cancelada && finDt.isAfter(DateTime.now());
+  bool get proxima =>
+      !cancelada && (proximaApi ?? finDt.isAfter(DateTime.now()));
 }
 
 class Usuario {
   final String nombre, apellido, dni, nacimiento, email;
   Usuario(this.nombre, this.apellido, this.dni, this.nacimiento, this.email);
   factory Usuario.fromJson(Map<String, dynamic> j) => Usuario(
-      str(j['nombre']),
-      str(j['apellido']),
-      str(j['dni']),
-      str(j['fecha_nacimiento']),
-      str(j['email']));
+    str(j['nombre']),
+    str(j['apellido']),
+    str(j['dni']),
+    str(j['fecha_nacimiento']),
+    str(j['email']),
+  );
 }

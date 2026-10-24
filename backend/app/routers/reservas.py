@@ -19,7 +19,7 @@ def reserva_a_dict(r: Reserva) -> dict:
         "id": r.id, "espacio_id": r.espacio_id,
         "espacio_nombre": r.espacio.nombre, "sede_nombre": r.espacio.sede.nombre,
         "fecha": r.fecha, "hora_inicio": r.hora_inicio, "hora_fin": r.hora_fin,
-        "total": float(r.total), "estado": r.estado,
+        "total": float(r.total), "estado": r.estado, "proxima": r.estado == "confirmada" and datetime.combine(r.fecha, r.hora_fin) > ahora_ar(),
     }
 
 
