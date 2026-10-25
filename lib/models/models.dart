@@ -29,16 +29,8 @@ class Espacio {
   final String nombre, sede, deporte, apertura, cierre;
   final double precioHora;
   final bool indoor;
-  Espacio(
-    this.id,
-    this.nombre,
-    this.sede,
-    this.deporte,
-    this.apertura,
-    this.cierre,
-    this.precioHora,
-    this.indoor,
-  );
+  Espacio(this.id, this.nombre, this.sede, this.deporte, this.apertura,
+      this.cierre, this.precioHora, this.indoor);
 
   factory Espacio.fromJson(Map<String, dynamic> j) {
     final s = j['sede'], d = j['deporte'];
@@ -60,17 +52,8 @@ class Reserva {
   final String espacio, sede, fecha, inicio, fin, estado;
   final double total;
   final bool? proximaApi;
-  Reserva(
-    this.id,
-    this.espacio,
-    this.sede,
-    this.fecha,
-    this.inicio,
-    this.fin,
-    this.estado,
-    this.total, {
-    this.proximaApi,
-  });
+  Reserva(this.id, this.espacio, this.sede, this.fecha, this.inicio, this.fin,
+      this.estado, this.total, {this.proximaApi});
 
   factory Reserva.fromJson(Map<String, dynamic> j) {
     final e = j['espacio'];
@@ -97,10 +80,9 @@ class Usuario {
   final String nombre, apellido, dni, nacimiento, email;
   Usuario(this.nombre, this.apellido, this.dni, this.nacimiento, this.email);
   factory Usuario.fromJson(Map<String, dynamic> j) => Usuario(
-    str(j['nombre']),
-    str(j['apellido']),
-    str(j['dni']),
-    str(j['fecha_nacimiento']),
-    str(j['email']),
-  );
+      str(j['nombre']),
+      str(j['apellido']),
+      str(j['dni']),
+      str(j['fecha_nacimiento']),
+      str(j['email']));
 }

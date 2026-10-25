@@ -10,6 +10,10 @@ class ApiException implements Exception {
   final String message;
   final int? status;
   ApiException(this.message, [this.status]);
+  bool get esConexion => status == null && message.startsWith('Sin conexión');
+  bool get esServidor =>
+      (status ?? 0) >= 500 ||
+      (status == null && message.toLowerCase().contains('servidor'));
   @override
   String toString() => message;
 }

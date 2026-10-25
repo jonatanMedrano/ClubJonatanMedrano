@@ -1,8 +1,22 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'theme.dart';
 
 final messengerKey = GlobalKey<ScaffoldMessengerState>();
+
+enum TipoError { conexion, servidor, otro }
+
+TipoError tipoError(Object e) {
+  if (e is ApiException) {
+    if (e.esConexion) return TipoError.conexion;
+    if (e.esServidor) return TipoError.servidor;
+  }
+  if (e is FirebaseAuthException && e.code == 'network-request-failed') {
+    return TipoError.conexion;
+  }
+  return TipoError.otro;
+}
 
 String errorMessage(Object e) {
   if (e is ApiException) return e.message;
@@ -11,13 +25,13 @@ String errorMessage(Object e) {
       case 'invalid-credential':
       case 'wrong-password':
       case 'user-not-found':
-        return 'Correo o contraseña incorrectos.';
+        return 'Email o contraseña incorrectos.';
       case 'invalid-email':
-        return 'El correo no es válido.';
+        return 'El email no es válido.';
       case 'email-already-in-use':
-        return 'Ese correo ya está registrado.';
+        return 'Ese email ya está registrado.';
       case 'weak-password':
-        return 'La contraseña debe tener al menos 6 caracteres.';
+        return 'La contraseña es demasiado débil.';
       case 'network-request-failed':
         return 'Sin conexión a internet.';
       case 'too-many-requests':
@@ -34,4 +48,51 @@ void showMsg(BuildContext c, String m, {bool error = false}) {
     content: Text(m),
     backgroundColor: error ? Colors.red.shade700 : null,
   ));
+}
+
+/// Cuadro de diálogo de error (siempre oscuro, como en el diseño).
+Future<void> showErrorDialog(BuildContext context, TipoError tipo) {
+  final conexion = tipo == TipoError.conexion;
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => Theme(
+      data: buildTheme(Brightness.dark),
+      child: Builder(
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF0B0B0B),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: const BorderSide(color: Color(0x66E0645F)),
+          ),
+          title: Text(
+            conexion ? 'ERROR DE CONECTIVIDAD' : 'ERROR DEL SERVIDOR',
+            style: const TextStyle(
+                color: AppColors.rojo, fontSize: 12, letterSpacing: 3, fontWeight: FontWeight.w800),
+          ),
+          content: Text(
+            conexion
+                ? 'Parece que no estás conectado a ninguna red. Reestablecé tu conexión e intentá otra vez.'
+                : 'Parece que hubo un error en el servidor. Por favor, volvé a intentarlo más tarde.',
+          ),
+          actions: [
+            FilledButton(
+              style: FilledButton.styleFrom(minimumSize: const Size(110, 44)),
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('ACEPTAR'),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// Muestra el error más adecuado: diálogo si es de red/servidor, aviso si no.
+void mostrarError(BuildContext context, Object e) {
+  final t = tipoError(e);
+  if (t == TipoError.otro) {
+    showMsg(context, errorMessage(e), error: true);
+  } else {
+    showErrorDialog(context, t);
+  }
 }
