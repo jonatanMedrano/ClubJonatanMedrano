@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import '../core/theme.dart';
 import '../services/notification_service.dart';
-import 'canchas_screen.dart';
+import '../services/stores.dart';
+import 'inicio_screen.dart';
 import 'perfil_screen.dart';
 import 'reservas_screen.dart';
+import 'sedes_screen.dart';
 
+/// Contenedor con el menú inferior: Inicio, Sedes, Reservas y Perfil.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
   @override
@@ -11,32 +15,126 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _i = 0;
-
   @override
   void initState() {
     super.initState();
-    NotificationService.init();
+    NavController.tab.value = 0;
+    // Se carga después del primer dibujo para no avisar cambios en pleno armado.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UserStore.instance.load();
+      CatalogStore.instance.load();
+      ReservasStore.instance.load();
+      NotificationStore.instance.load();
+      NotificationService.init();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final pages = [
-      CanchasScreen(onReserved: () => setState(() => _i = 1)),
-      const ReservasScreen(),
-      const PerfilScreen(),
-    ];
-    return Scaffold(
-      body: pages[_i],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _i,
-        onDestinationSelected: (i) => setState(() => _i = i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.sports_soccer), label: 'Canchas'),
-          NavigationDestination(icon: Icon(Icons.event_note), label: 'Mis reservas'),
-          NavigationDestination(icon: Icon(Icons.person), label: 'Perfil'),
-        ],
+    return ValueListenableBuilder<int>(
+      valueListenable: NavController.tab,
+      builder: (context, i, _) => PopScope(
+        canPop: i == 0,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) NavController.tab.value = 0;
+        },
+        child: Scaffold(
+          body: IndexedStack(index: i, children: const [
+            InicioScreen(),
+            SedesScreen(),
+            ReservasScreen(),
+            PerfilScreen(),
+          ]),
+          bottomNavigationBar: _NavBar(
+            index: i,
+            onTap: (v) => NavController.tab.value = v,
+          ),
+        ),
       ),
+    );
+  }
+}
+
+class _NavBar extends StatelessWidget {
+  final int index;
+  final ValueChanged<int> onTap;
+  const _NavBar({required this.index, required this.onTap});
+
+  static const _items = [
+    (Icons.home_outlined, Icons.home, 'Inicio'),
+    (Icons.domain_outlined, Icons.domain, 'Sedes'),
+    (Icons.event_note_outlined, Icons.event_note, 'Reservas'),
+    (Icons.person_outline, Icons.person, 'Perfil'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: context.superficie,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: context.borde),
+          ),
+          child: Row(
+            children: [
+              for (var i = 0; i < _items.length; i++)
+                Expanded(
+                  child: _NavItem(
+                    icono: index == i ? _items[i].$2 : _items[i].$1,
+                    label: _items[i].$3,
+                    activo: index == i,
+                    onTap: () => onTap(i),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  final IconData icono;
+  final String label;
+  final bool activo;
+  final VoidCallback onTap;
+  const _NavItem({
+    required this.icono,
+    required this.label,
+    required this.activo,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = activo ? context.verde : context.muted;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Icon(icono, color: color, size: 24),
+        const SizedBox(height: 3),
+        Text(label.toUpperCase(),
+            style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1)),
+        const SizedBox(height: 4),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          height: 3,
+          width: activo ? 22 : 0,
+          decoration: BoxDecoration(
+              color: context.verde, borderRadius: BorderRadius.circular(2)),
+        ),
+      ]),
     );
   }
 }
