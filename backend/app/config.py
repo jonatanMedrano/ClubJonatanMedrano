@@ -25,6 +25,9 @@ def _database_url() -> str:
 
 DATABASE_URL = _database_url()
 
+# Único usuario administrador: el correo con el que se registró en la app.
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "").strip().lower()
+
 
 def ahora_ar() -> datetime:
     """Hora actual de Argentina, sin zona (para comparar con fecha/hora de reservas)."""

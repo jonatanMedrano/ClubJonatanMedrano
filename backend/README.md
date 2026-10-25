@@ -35,6 +35,9 @@ python -m app.seed
 Las tablas se crean solas al iniciar la API o el seed. Editá `app/seed.py` para cambiar
 direcciones, precios u horarios reales.
 
+> Para reemplazar los datos por los del diseño: `python -m app.seed --reset`
+> (borra reservas, canchas, sedes y deportes; los usuarios se conservan).
+
 ## 5. Ejecutar
 ```powershell
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -59,6 +62,12 @@ Swagger: http://localhost:8000/docs
 | POST | `/reservas` | sí |
 | GET | `/reservas/mias` | sí |
 | PATCH | `/reservas/{id}/cancelar` | sí |
+
+## Administrador
+Hay un único administrador: el usuario cuyo correo está en `ADMIN_EMAIL` del `.env`.
+Se registra normalmente desde la app y, desde ese momento, puede usar los endpoints
+`/admin/...` (crear, modificar y eliminar sedes, deportes y canchas; ver usuarios y reservas).
+En Swagger aparecen en la sección *Administración*.
 
 ## Reglas de reservas
 1 o 2 horas, en hora en punto, dentro del horario de la cancha; no en el pasado

@@ -9,9 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .auth import iniciar_firebase
-from .database import Base, engine
+from .database import Base, engine, migrar_columnas
 from .notifications import enviar_recordatorios
-from .routers import catalogo, reservas, usuarios
+from .routers import admin, catalogo, reservas, usuarios
 
 logging.basicConfig(level=logging.INFO)
 
@@ -20,6 +20,7 @@ logging.basicConfig(level=logging.INFO)
 async def lifespan(app: FastAPI):
     iniciar_firebase()
     Base.metadata.create_all(bind=engine)  # crea las tablas si no existen
+    migrar_columnas()
     scheduler = None
     if os.getenv("ENABLE_SCHEDULER", "true").lower() == "true":
         scheduler = BackgroundScheduler(timezone="America/Argentina/Buenos_Aires")
@@ -68,6 +69,7 @@ async def datos_invalidos(request: Request, exc: RequestValidationError):
 app.include_router(catalogo.router)
 app.include_router(usuarios.router)
 app.include_router(reservas.router)
+app.include_router(admin.router)
 
 
 @app.get("/", include_in_schema=False)

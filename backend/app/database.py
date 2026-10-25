@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from .config import DATABASE_URL
@@ -17,3 +17,10 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def migrar_columnas() -> None:
+    """Agrega columnas nuevas a tablas ya existentes (create_all no lo hace)."""
+    with engine.begin() as c:
+        c.execute(text("ALTER TABLE espacios ADD COLUMN IF NOT EXISTS subtipo VARCHAR(40)"))
+        c.execute(text("ALTER TABLE espacios ADD COLUMN IF NOT EXISTS iluminada BOOLEAN NOT NULL DEFAULT FALSE"))

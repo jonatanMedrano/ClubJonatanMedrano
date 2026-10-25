@@ -59,3 +59,9 @@ def get_usuario_actual(
     if usuario is None:
         raise HTTPException(404, "Todavía no completaste tu perfil.")
     return usuario
+
+
+def get_admin(usuario: Usuario = Depends(get_usuario_actual)) -> Usuario:
+    if not usuario.es_admin:
+        raise HTTPException(403, "Solo el administrador puede realizar esta acción.")
+    return usuario
