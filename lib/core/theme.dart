@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Toda la estética vive acá. Cambiando estos colores cambia toda la app.
 class AppColors {
-  // Se mantienen por compatibilidad con las pantallas de la primera versión.
+  // Se mantienen por compatibilidad con las pantallas anteriores.
   static const primary = Color(0xFF1B8A4B);
   static const dark = Color(0xFF0B3D20);
   static const accent = Color(0xFFFFC83D);
@@ -13,6 +13,26 @@ class AppColors {
   static const verdeDia = Color(0xFF1B8A4B); // verde sobre fondo claro
   static const verdeNoche = Color(0xFF3DDC84); // verde sobre fondo negro
   static const rojo = Color(0xFFE0645F);
+
+  static const ambarDia = Color(0xFFB86E00);
+  static const ambarNoche = Color(0xFFFFB347);
+  static const indigoDia = Color(0xFF4F5BD5);
+  static const indigoNoche = Color(0xFF9AA2FF);
+}
+
+/// Atajos de color según el modo (día / noche) activo.
+extension ThemeX on BuildContext {
+  bool get noche => Theme.of(this).brightness == Brightness.dark;
+  Color get verde => Theme.of(this).colorScheme.primary;
+  Color get onVerde => Theme.of(this).colorScheme.onPrimary;
+  Color get texto => Theme.of(this).colorScheme.onSurface;
+  Color get muted => Theme.of(this).colorScheme.onSurface.withAlpha(140);
+  Color get superficie => Theme.of(this).colorScheme.surface;
+  Color get fondo => Theme.of(this).scaffoldBackgroundColor;
+  Color get borde =>
+      noche ? Colors.white.withAlpha(30) : const Color(0xFFD9E0DB);
+  Color get chipBg =>
+      noche ? Colors.white.withAlpha(18) : const Color(0xFFEFF2F0);
 }
 
 /// Estilo de títulos: condensado y en negrita.
@@ -26,9 +46,8 @@ TextStyle tituloStyle(BuildContext c, {double size = 32, Color? color}) =>
     );
 
 OutlineInputBorder _borde(Color c, [double w = 1]) => OutlineInputBorder(
-  borderRadius: BorderRadius.circular(14),
-  borderSide: BorderSide(color: c, width: w),
-);
+    borderRadius: BorderRadius.circular(14),
+    borderSide: BorderSide(color: c, width: w));
 
 /// Aplica la fuente Inter a cada estilo del texto. Se hace a mano porque
 /// GoogleFonts.interTextTheme usa otro tipo de TextTheme en las versiones nuevas.
@@ -63,16 +82,14 @@ ThemeData buildTheme(Brightness b) {
   final borde = noche ? Colors.white24 : const Color(0xFFD5DCD7);
 
   final scheme =
-      ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
-        brightness: b,
-      ).copyWith(
-        primary: verde,
-        onPrimary: noche ? Colors.black : Colors.white,
-        surface: superficie,
-        onSurface: texto,
-        error: AppColors.rojo,
-      );
+      ColorScheme.fromSeed(seedColor: AppColors.primary, brightness: b)
+          .copyWith(
+    primary: verde,
+    onPrimary: noche ? Colors.black : Colors.white,
+    surface: superficie,
+    onSurface: texto,
+    error: AppColors.rojo,
+  );
   final textTheme = _conInter(ThemeData(brightness: b).textTheme)
       .apply(bodyColor: texto, displayColor: texto);
 
@@ -86,11 +103,10 @@ ThemeData buildTheme(Brightness b) {
       backgroundColor: noche ? const Color(0xFF0A0F0C) : AppColors.dark,
       foregroundColor: Colors.white,
       titleTextStyle: GoogleFonts.barlowCondensed(
-        fontSize: 24,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 0.5,
-        color: Colors.white,
-      ),
+          fontSize: 24,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+          color: Colors.white),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -108,10 +124,7 @@ ThemeData buildTheme(Brightness b) {
         minimumSize: const Size.fromHeight(54),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         textStyle: GoogleFonts.barlowCondensed(
-          fontSize: 19,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 1.2,
-        ),
+            fontSize: 19, fontWeight: FontWeight.w800, letterSpacing: 1.2),
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(
@@ -135,8 +148,8 @@ class ThemeController extends ChangeNotifier {
       mode = v == 'dark'
           ? ThemeMode.dark
           : v == 'light'
-          ? ThemeMode.light
-          : ThemeMode.system;
+              ? ThemeMode.light
+              : ThemeMode.system;
     } catch (_) {}
     notifyListeners();
   }

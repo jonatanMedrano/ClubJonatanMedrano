@@ -10,10 +10,12 @@ class ApiException implements Exception {
   final String message;
   final int? status;
   ApiException(this.message, [this.status]);
+
   bool get esConexion => status == null && message.startsWith('Sin conexión');
   bool get esServidor =>
       (status ?? 0) >= 500 ||
       (status == null && message.toLowerCase().contains('servidor'));
+
   @override
   String toString() => message;
 }
@@ -103,21 +105,18 @@ class Api {
         .toList();
   }
 
-  /// Devuelve las horas de INICIO libres (ej: [18, 19, 20]).
-  static Future<List<int>> horasLibres(int espacioId, String fecha) async {
+  /// Todas las horas de la cancha para una fecha, con su disponibilidad.
+  static Future<List<Franja>> disponibilidad(int espacioId, String fecha) async {
     final d = await _send('GET', '/espacios/$espacioId/disponibilidad',
         query: {'fecha': fecha}, auth: false);
-    final list = d is Map ? (d['horarios'] ?? d['disponibles'] ?? []) : d;
-    final out = <int>[];
-    for (final it in list as List) {
-      if (it is Map) {
-        if (it['disponible'] == false) continue;
-        out.add(int.parse(str(it['hora_inicio'] ?? it['hora']).substring(0, 2)));
-      } else {
-        out.add(int.parse('$it'.substring(0, 2)));
-      }
+    final list = (d is Map ? d['horarios'] : null) as List? ?? const [];
+    final out = <Franja>[];
+    for (final it in list) {
+      final m = it as Map;
+      out.add(Franja(int.parse(str(m['hora_inicio']).substring(0, 2)),
+          m['disponible'] == true));
     }
-    out.sort();
+    out.sort((a, b) => a.hora.compareTo(b.hora));
     return out;
   }
 
@@ -130,6 +129,8 @@ class Api {
 
   static Future<void> editarPerfil(Map<String, dynamic> body) =>
       _send('PUT', '/usuarios/me', body: body);
+
+  static Future<void> eliminarCuenta() => _send('DELETE', '/usuarios/me');
 
   static Future<void> crearReserva(
           int espacioId, String fecha, String inicio, String fin) =>
