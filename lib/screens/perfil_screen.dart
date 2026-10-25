@@ -100,6 +100,15 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
+                  Card(
+                    child: SwitchListTile(
+                      secondary: const Icon(Icons.dark_mode_outlined),
+                      title: const Text('Modo nocturno'),
+                      value: Theme.of(context).brightness == Brightness.dark,
+                      onChanged: (v) => ThemeController.instance.setDark(v),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   TextField(
                       controller: _nombre,
                       decoration: const InputDecoration(labelText: 'Nombre')),
