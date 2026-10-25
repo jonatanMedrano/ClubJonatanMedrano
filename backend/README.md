@@ -80,13 +80,23 @@ Cada 5 minutos un job envía recordatorios 24 h y 1 h antes, y al cancelar se av
 Se desactivan con `ENABLE_SCHEDULER=false`.
 
 ## Despliegue en Render
-1. **New → PostgreSQL**: copiá la *Internal Database URL*.
-2. **New → Web Service** (repo de GitHub, *Root Directory* = `backend`):
-   - Build: `pip install -r requirements.txt`
-   - Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-3. Variables de entorno: `DATABASE_URL`, `FIREBASE_CREDENTIALS_JSON` (pegá TODO el contenido
-   del JSON), `ENABLE_SCHEDULER=true`.
-4. Una vez desplegado, desde el *Shell* de Render corré `python -m app.seed`.
+El archivo `render.yaml` (en la raíz del repo) describe todo: la base PostgreSQL y la API.
 
-> En el plan gratuito Render duerme el servicio tras 15 min sin uso, y mientras duerme
-> no se envían recordatorios.
+1. Subí el repo a GitHub (`git push`). **No** subas `.env` ni `firebase-credentials.json`.
+2. En https://render.com: **New → Blueprint** → elegí el repositorio → *Apply*.
+3. Render pide dos valores:
+   - `FIREBASE_CREDENTIALS_JSON`: el contenido del JSON en **una sola línea**
+     (`python -c "import json;print(json.dumps(json.load(open('firebase-credentials.json'))))" | clip`).
+   - `ADMIN_EMAIL`: el correo del usuario administrador.
+4. Cuando termine, la API queda en `https://<nombre>.onrender.com` y Swagger en `/docs`.
+   Con `AUTO_SEED=true` se cargan solas las sedes, deportes y canchas (solo si la base está vacía).
+
+Variables de entorno: `DATABASE_URL`, `FIREBASE_CREDENTIALS_JSON`, `ADMIN_EMAIL`,
+`ENABLE_SCHEDULER`, `AUTO_SEED`, `PYTHON_VERSION`.
+
+### Limitaciones del plan gratuito
+- La API se duerme tras 15 min sin uso y tarda ~1 minuto en despertar. Mientras duerme no
+  se envían recordatorios: un monitor externo (UptimeRobot) que consulte `/health` cada
+  5 minutos la mantiene despierta.
+- La base gratuita **vence a los 30 días** de creada (14 días de gracia antes de borrarse).
+- No hay Shell: por eso existe `AUTO_SEED`.

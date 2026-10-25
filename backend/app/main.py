@@ -12,8 +12,10 @@ from .auth import iniciar_firebase
 from .database import Base, engine, migrar_columnas
 from .notifications import enviar_recordatorios
 from .routers import admin, catalogo, reservas, usuarios
+from .seed import main as cargar_datos_iniciales
 
 logging.basicConfig(level=logging.INFO)
+log = logging.getLogger("club")
 
 
 @asynccontextmanager
@@ -21,6 +23,13 @@ async def lifespan(app: FastAPI):
     iniciar_firebase()
     Base.metadata.create_all(bind=engine)  # crea las tablas si no existen
     migrar_columnas()
+    # En Render (plan gratis) no hay Shell para correr el seed a mano:
+    # con AUTO_SEED=true carga sedes, deportes y canchas SOLO si la base está vacía.
+    if os.getenv("AUTO_SEED", "false").lower() == "true":
+        try:
+            cargar_datos_iniciales()
+        except Exception:  # noqa: BLE001
+            log.exception("No se pudieron cargar los datos iniciales")
     scheduler = None
     if os.getenv("ENABLE_SCHEDULER", "true").lower() == "true":
         scheduler = BackgroundScheduler(timezone="America/Argentina/Buenos_Aires")
@@ -70,6 +79,12 @@ app.include_router(catalogo.router)
 app.include_router(usuarios.router)
 app.include_router(reservas.router)
 app.include_router(admin.router)
+
+
+@app.get("/health", include_in_schema=False)
+def health():
+    """Lo usan Render (health check) y el monitor que mantiene despierta la API."""
+    return {"status": "ok"}
 
 
 @app.get("/", include_in_schema=False)

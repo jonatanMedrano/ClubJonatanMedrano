@@ -1,0 +1,34 @@
+# Blueprint de Render: crea la base de datos y la API con un solo clic.
+# Va en la RAÍZ del repositorio (junto a las carpetas backend/ y lib/).
+databases:
+  - name: club-db
+    plan: free
+    databaseName: club_db
+    user: club_user
+    region: virginia
+
+services:
+  - type: web
+    name: club-jonatan-api
+    runtime: python
+    plan: free
+    region: virginia            # debe ser la misma región que la base
+    rootDir: backend            # el código de la API está en backend/
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION     # Render usa Python 3.14 por defecto; fijamos 3.12
+        value: 3.12.8
+      - key: DATABASE_URL       # se completa sola con la base creada arriba
+        fromDatabase:
+          name: club-db
+          property: connectionString
+      - key: FIREBASE_CREDENTIALS_JSON   # Render te lo pide al crear (pegás el JSON en 1 línea)
+        sync: false
+      - key: ADMIN_EMAIL                 # Render te lo pide al crear (tu correo de admin)
+        sync: false
+      - key: ENABLE_SCHEDULER
+        value: "true"
+      - key: AUTO_SEED          # carga sedes/deportes/canchas si la base está vacía
+        value: "true"

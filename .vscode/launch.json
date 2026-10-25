@@ -1,0 +1,20 @@
+{
+  // F5 en VS Code: elegí en el desplegable de "Run and Debug" a qué API conectarse.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "App -> API local (emulador)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": ["--dart-define=API_URL=http://10.0.2.2:8000"]
+    },
+    {
+      "name": "App -> API en Render",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": ["--dart-define=API_URL=https://club-jonatan-api.onrender.com"]
+    }
+  ]
+}
