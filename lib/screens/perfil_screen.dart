@@ -6,6 +6,7 @@ import '../core/ui.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../services/stores.dart';
+import 'admin_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -238,17 +239,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
       const SizedBox(height: 14),
 
       if (u.esAdmin) ...[
-        Panel(
-          child: Row(children: [
-            Icon(Icons.admin_panel_settings_outlined, color: context.verde),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Sos administrador: gestioná sedes, canchas y deportes desde la documentación de la API (/docs).',
-                style: TextStyle(color: context.muted, fontSize: 13, height: 1.35),
-              ),
-            ),
-          ]),
+        FilledButton.icon(
+          onPressed: () => Navigator.push(
+              context, MaterialPageRoute(builder: (_) => const AdminScreen())),
+          icon: const Icon(Icons.admin_panel_settings_outlined),
+          label: const Text('GESTIÓN ADMIN'),
         ),
         const SizedBox(height: 14),
       ],

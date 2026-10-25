@@ -149,4 +149,27 @@ class Api {
 
   static Future<void> guardarFcmToken(String token) =>
       _send('PUT', '/usuarios/me/fcm-token', body: {'token': token});
+
+  // ---------- Administración (solo el usuario admin) ----------
+  // id == null -> crear (POST); id != null -> modificar (PUT).
+  static Future<void> _guardarAdmin(
+          String ruta, int? id, Map<String, dynamic> body) =>
+      id == null
+          ? _send('POST', '/admin/$ruta', body: body)
+          : _send('PUT', '/admin/$ruta/$id', body: body);
+
+  static Future<void> adminGuardarSede(int? id, Map<String, dynamic> body) =>
+      _guardarAdmin('sedes', id, body);
+  static Future<void> adminEliminarSede(int id) =>
+      _send('DELETE', '/admin/sedes/$id');
+
+  static Future<void> adminGuardarDeporte(int? id, Map<String, dynamic> body) =>
+      _guardarAdmin('deportes', id, body);
+  static Future<void> adminEliminarDeporte(int id) =>
+      _send('DELETE', '/admin/deportes/$id');
+
+  static Future<void> adminGuardarEspacio(int? id, Map<String, dynamic> body) =>
+      _guardarAdmin('espacios', id, body);
+  static Future<void> adminEliminarEspacio(int id) =>
+      _send('DELETE', '/admin/espacios/$id');
 }
