@@ -6,6 +6,7 @@ from sqlalchemy import (Boolean, Date, DateTime, ForeignKey, Index, Numeric,
                         String, Time, func)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from .config import ADMIN_EMAIL
 from .database import Base
 
 
@@ -33,6 +34,8 @@ class Espacio(Base):
     numero: Mapped[int]
     precio_hora: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     indoor: Mapped[bool] = mapped_column(Boolean, default=False)
+    iluminada: Mapped[bool] = mapped_column(Boolean, default=False)
+    subtipo: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
     hora_apertura: Mapped[time] = mapped_column(Time)
     hora_cierre: Mapped[time] = mapped_column(Time)
     sede_id: Mapped[int] = mapped_column(ForeignKey("sedes.id"))
@@ -55,6 +58,10 @@ class Usuario(Base):
     reservas: Mapped[list["Reserva"]] = relationship(
         back_populates="usuario", cascade="all, delete-orphan"
     )
+
+    @property
+    def es_admin(self) -> bool:
+        return bool(ADMIN_EMAIL) and self.email.lower() == ADMIN_EMAIL
 
 
 class Reserva(Base):

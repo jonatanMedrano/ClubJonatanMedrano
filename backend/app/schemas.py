@@ -2,9 +2,33 @@ import re
 from datetime import date, time
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .config import ahora_ar
+
+
+def _en_punto(t: time) -> time:
+    if t.minute or t.second:
+        raise ValueError("debe ser una hora en punto")
+    return t
+
+
+class SedeIn(BaseModel):
+    nombre: str = Field(min_length=1, max_length=80)
+    direccion: str = Field(min_length=1, max_length=120)
+    hora_apertura: time = time(8, 0)
+    hora_cierre: time = time(23, 0)
+
+    @field_validator("hora_apertura", "hora_cierre")
+    @classmethod
+    def _horas_en_punto(cls, v: time) -> time:
+        return _en_punto(v)
+
+    @model_validator(mode="after")
+    def _orden(self):
+        if self.hora_apertura >= self.hora_cierre:
+            raise ValueError("la apertura debe ser anterior al cierre")
+        return self
 
 
 class SedeOut(BaseModel):
@@ -14,6 +38,12 @@ class SedeOut(BaseModel):
     direccion: str
     hora_apertura: time
     hora_cierre: time
+    cantidad_canchas: int = 0
+    deportes: list[str] = []
+
+
+class DeporteIn(BaseModel):
+    nombre: str = Field(min_length=1, max_length=40)
 
 
 class DeporteOut(BaseModel):
@@ -22,16 +52,42 @@ class DeporteOut(BaseModel):
     nombre: str
 
 
+class EspacioIn(BaseModel):
+    nombre: str = Field(min_length=1, max_length=120, description="Ej: Moron_Rivadavia_Futbol_F5_Cancha_1")
+    sede_id: int
+    deporte_id: int
+    subtipo: Optional[str] = Field(default=None, max_length=40, description="Ej: Fútbol 5, Cemento, 9 Hoyos")
+    numero: int = Field(default=1, ge=1)
+    precio_hora: float = Field(gt=0)
+    indoor: bool = False
+    iluminada: bool = False
+    hora_apertura: time = time(8, 0)
+    hora_cierre: time = time(23, 0)
+
+    @field_validator("hora_apertura", "hora_cierre")
+    @classmethod
+    def _horas_en_punto(cls, v: time) -> time:
+        return _en_punto(v)
+
+    @model_validator(mode="after")
+    def _orden(self):
+        if self.hora_apertura >= self.hora_cierre:
+            raise ValueError("la apertura debe ser anterior al cierre")
+        return self
+
+
 class EspacioOut(BaseModel):
     id: int
     nombre: str
     numero: int
+    subtipo: Optional[str] = None
     sede_id: int
     sede_nombre: str
     deporte_id: int
     deporte_nombre: str
     precio_hora: float
     indoor: bool
+    iluminada: bool = False
     hora_apertura: time
     hora_cierre: time
 
@@ -80,6 +136,7 @@ class UsuarioOut(BaseModel):
     dni: str
     fecha_nacimiento: date
     email: str
+    es_admin: bool = False
 
 
 class FcmTokenIn(BaseModel):

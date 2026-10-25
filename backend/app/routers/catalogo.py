@@ -2,7 +2,7 @@ from datetime import date, datetime, time
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
 from ..config import ahora_ar
@@ -15,17 +15,38 @@ router = APIRouter(tags=["Catálogo (sin login)"])
 
 def espacio_a_dict(e: Espacio) -> dict:
     return {
-        "id": e.id, "nombre": e.nombre, "numero": e.numero,
+        "id": e.id, "nombre": e.nombre, "numero": e.numero, "subtipo": e.subtipo,
         "sede_id": e.sede_id, "sede_nombre": e.sede.nombre,
         "deporte_id": e.deporte_id, "deporte_nombre": e.deporte.nombre,
         "precio_hora": float(e.precio_hora), "indoor": e.indoor,
+        "iluminada": e.iluminada,
         "hora_apertura": e.hora_apertura, "hora_cierre": e.hora_cierre,
     }
 
 
 @router.get("/sedes", response_model=list[SedeOut], summary="Listar sedes")
 def listar_sedes(db: Session = Depends(get_db)):
-    return db.scalars(select(Sede).order_by(Sede.id)).all()
+    sedes = db.scalars(select(Sede).order_by(Sede.id)).all()
+    filas = db.execute(
+        select(Espacio.sede_id, Deporte.nombre, func.count(Espacio.id))
+        .join(Deporte, Deporte.id == Espacio.deporte_id)
+        .group_by(Espacio.sede_id, Deporte.id, Deporte.nombre)
+        .order_by(Deporte.id)
+    ).all()
+    por_sede: dict = {}
+    for sede_id, deporte, cantidad in filas:
+        d = por_sede.setdefault(sede_id, {"deportes": [], "total": 0})
+        d["deportes"].append(deporte)
+        d["total"] += cantidad
+    return [
+        {
+            "id": s.id, "nombre": s.nombre, "direccion": s.direccion,
+            "hora_apertura": s.hora_apertura, "hora_cierre": s.hora_cierre,
+            "cantidad_canchas": por_sede.get(s.id, {}).get("total", 0),
+            "deportes": por_sede.get(s.id, {}).get("deportes", []),
+        }
+        for s in sedes
+    ]
 
 
 @router.get("/deportes", response_model=list[DeporteOut], summary="Listar deportes")
@@ -45,7 +66,7 @@ def listar_espacios(
         q = q.where(Espacio.sede_id == sede_id)
     if deporte_id is not None:
         q = q.where(Espacio.deporte_id == deporte_id)
-    q = q.order_by(Espacio.sede_id, Espacio.deporte_id, Espacio.numero)
+    q = q.order_by(Espacio.sede_id, Espacio.deporte_id, Espacio.subtipo, Espacio.numero)
     return [espacio_a_dict(e) for e in db.scalars(q).all()]
 
 
