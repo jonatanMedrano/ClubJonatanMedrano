@@ -4,6 +4,7 @@ Necesita FIREBASE_WEB_API_KEY en el .env"""
 import json
 import os
 import sys
+import urllib.error
 import urllib.request
 
 from dotenv import load_dotenv
@@ -20,5 +21,11 @@ req = urllib.request.Request(
 )
 try:
     print(json.load(urllib.request.urlopen(req))["idToken"])
+except urllib.error.HTTPError as e:
+    try:
+        motivo = json.load(e)["error"]["message"]
+    except Exception:  # noqa: BLE001
+        motivo = str(e)
+    sys.exit(f"Firebase respondió: {motivo}")
 except Exception as e:  # noqa: BLE001
     sys.exit(f"No se pudo obtener el token: {e}")

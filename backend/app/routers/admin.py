@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
@@ -46,6 +46,19 @@ def crear_sede(data: SedeIn, db: Session = Depends(get_db)):
 @router.put("/sedes/{sede_id}", response_model=SedeOut, summary="Modificar sede")
 def modificar_sede(sede_id: int, data: SedeIn, db: Session = Depends(get_db)):
     sede = _obtener(db, Sede, sede_id, "La sede")
+    # No se puede achicar el horario de la sede dejando canchas por fuera.
+    fuera = db.scalar(
+        select(Espacio.id)
+        .where(Espacio.sede_id == sede_id,
+               or_(Espacio.hora_apertura < data.hora_apertura,
+                   Espacio.hora_cierre > data.hora_cierre))
+        .limit(1)
+    )
+    if fuera is not None:
+        raise HTTPException(
+            409,
+            "Hay canchas con horarios fuera del nuevo horario de la sede. Ajustalas primero.",
+        )
     for k, v in data.model_dump().items():
         setattr(sede, k, v)
     _guardar(db, "Ya existe una sede con ese nombre.")
@@ -92,8 +105,15 @@ def eliminar_deporte(deporte_id: int, db: Session = Depends(get_db)):
 
 # ---------------- Canchas ----------------
 def _aplicar_espacio(e: Espacio, data: EspacioIn, db: Session) -> None:
-    _obtener(db, Sede, data.sede_id, "La sede")
+    sede = _obtener(db, Sede, data.sede_id, "La sede")
     _obtener(db, Deporte, data.deporte_id, "El deporte")
+    # Los horarios de una cancha tienen que estar dentro de los de su sede.
+    if data.hora_apertura < sede.hora_apertura or data.hora_cierre > sede.hora_cierre:
+        raise HTTPException(
+            400,
+            f"El horario de la cancha debe estar dentro del de la sede "
+            f"({sede.hora_apertura:%H:%M} a {sede.hora_cierre:%H:%M}).",
+        )
     for k, v in data.model_dump().items():
         setattr(e, k, Decimal(str(v)) if k == "precio_hora" else v)
 
