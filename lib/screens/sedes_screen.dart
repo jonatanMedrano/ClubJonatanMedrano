@@ -171,6 +171,15 @@ class _SedeCard extends StatelessWidget {
             ]),
           ),
           Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+            child: Row(children: [
+              Icon(Icons.schedule, size: 16, color: context.muted),
+              const SizedBox(width: 6),
+              Text('Horario de la sede: ${sede.apertura} a ${sede.cierre} hs',
+                  style: TextStyle(color: context.muted, fontSize: 13)),
+            ]),
+          ),
+          Padding(
             padding: const EdgeInsets.all(14),
             child: Row(children: [
               Expanded(

@@ -100,7 +100,7 @@ class _SedeDetalleScreenState extends State<SedeDetalleScreen> {
             HeroHeader(
               foto: 'sede_${slug(sede.nombre)}',
               colores: coloresSede(widget.indice),
-              altura: 225,
+              altura: 240,
               fade: false,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(12, 4, 20, 0),
@@ -124,7 +124,18 @@ class _SedeDetalleScreenState extends State<SedeDetalleScreen> {
                         const Icon(Icons.location_on_outlined,
                             size: 14, color: Colors.white70),
                         const SizedBox(width: 4),
-                        Text(sede.direccion,
+                        Expanded(
+                          child: Text(sede.direccion,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                        ),
+                      ]),
+                      const SizedBox(height: 3),
+                      Row(children: [
+                        const Icon(Icons.schedule, size: 14, color: Colors.white70),
+                        const SizedBox(width: 4),
+                        Text('Abierto de ${sede.apertura} a ${sede.cierre} hs',
                             style: const TextStyle(color: Colors.white70, fontSize: 13)),
                       ]),
                     ]),

@@ -240,7 +240,7 @@ class _InicioScreenState extends State<InicioScreen> {
       cuerpo = const EstadoVacio('No hay sedes con ese deporte.');
     } else {
       cuerpo = SizedBox(
-        height: 262,
+        height: 280,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -372,6 +372,13 @@ class _SedeMini extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(color: context.muted, fontSize: 13)),
                   ),
+                ]),
+                const SizedBox(height: 4),
+                Row(children: [
+                  Icon(Icons.schedule, size: 15, color: context.muted),
+                  const SizedBox(width: 4),
+                  Text('${sede.apertura} a ${sede.cierre} hs',
+                      style: TextStyle(color: context.muted, fontSize: 13)),
                 ]),
                 const SizedBox(height: 10),
                 Wrap(spacing: 6, runSpacing: 6, children: [
