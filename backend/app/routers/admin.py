@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 from ..auth import get_admin
 from ..database import get_db
 from ..models import Deporte, Espacio, Reserva, Sede, Usuario
+from ..notifications import enviar_push_detalle, enviar_recordatorios
 from ..schemas import (DeporteIn, DeporteOut, EspacioIn, EspacioOut, SedeIn,
                        SedeOut, UsuarioOut)
 from .catalogo import espacio_a_dict
@@ -144,3 +145,22 @@ def listar_reservas(db: Session = Depends(get_db)):
     ).all()
     return [{**reserva_a_dict(r), "usuario": f"{r.usuario.nombre} {r.usuario.apellido}",
              "usuario_email": r.usuario.email} for r in reservas]
+
+
+# ---------------- Pruebas de notificaciones ----------------
+@router.post("/notificaciones/probar",
+             summary="Enviar una notificación de prueba a mi propio celular")
+def probar_notificacion(admin: Usuario = Depends(get_admin)):
+    error = enviar_push_detalle(
+        admin.fcm_token, "Notificación de prueba",
+        "Si ves esto, las notificaciones push funcionan.")
+    if error:
+        raise HTTPException(502, f"No se pudo enviar la notificación. {error}")
+    return {"enviada": True}
+
+
+@router.post("/recordatorios/ejecutar",
+             summary="Ejecutar ahora el aviso de recordatorios (sin esperar 5 minutos)")
+def ejecutar_recordatorios():
+    enviar_recordatorios()
+    return {"mensaje": "Recordatorios procesados."}

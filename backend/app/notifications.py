@@ -13,9 +13,10 @@ from .models import Reserva
 log = logging.getLogger("club")
 
 
-def enviar_push(token: Optional[str], titulo: str, cuerpo: str) -> None:
+def enviar_push_detalle(token: Optional[str], titulo: str, cuerpo: str) -> Optional[str]:
+    """Envía una notificación. Devuelve None si salió bien, o el motivo del error."""
     if not token:
-        return
+        return "El usuario todavía no registró un dispositivo."
     try:
         messaging.send(
             messaging.Message(
@@ -24,8 +25,16 @@ def enviar_push(token: Optional[str], titulo: str, cuerpo: str) -> None:
                 token=token,
             )
         )
+        return None
     except Exception as e:  # noqa: BLE001
         log.warning("No se pudo enviar la notificación: %s", e)
+        return f"{type(e).__name__}: {e}"
+
+
+def enviar_push(token: Optional[str], titulo: str, cuerpo: str) -> None:
+    """Igual que enviar_push_detalle, pero sin devolver nada (si falla, solo se registra)."""
+    if token:
+        enviar_push_detalle(token, titulo, cuerpo)
 
 
 def enviar_recordatorios() -> None:
@@ -50,7 +59,8 @@ def enviar_recordatorios() -> None:
                 r.recordatorio_1h = True
                 r.recordatorio_24h = True
             elif timedelta(hours=1) < falta <= timedelta(hours=24) and not r.recordatorio_24h:
+                cuando = "hoy" if r.fecha == ahora.date() else "mañana"
                 enviar_push(r.usuario.fcm_token, "Recordatorio de reserva",
-                            f"Mañana tenés {r.espacio.nombre} a las {hora} hs.")
+                            f"Tenés {r.espacio.nombre} {cuando} a las {hora} hs.")
                 r.recordatorio_24h = True
         db.commit()
