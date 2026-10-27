@@ -44,6 +44,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     if (d != null) setState(() => _nacimiento = isoDate(d));
   }
 
+  // edita nombre, apellido y fecha de nacimiento en la api (el dni y el mail no se pueden cambiar)
   Future<void> _guardar() async {
     if (_nombre.text.trim().isEmpty || _apellido.text.trim().isEmpty) {
       showMsg(context, 'Nombre y apellido son obligatorios.', error: true);
@@ -68,6 +69,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
+  // vacia los stores para que al entrar otro usuario no vea datos del anterior
   void _limpiarSesion() {
     UserStore.instance.clear();
     ReservasStore.instance.clear();
@@ -80,6 +82,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
     _limpiarSesion();
   }
 
+  // borra la cuenta: la api elimina el perfil con sus reservas y la cuenta de firebase, despues se cierra la
+  // sesion
   Future<void> _eliminarCuenta() async {
     final ok = await confirmarPeligro(
       context,
@@ -248,7 +252,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
         const SizedBox(height: 14),
       ],
 
-      // ---- Cerrar sesión ----
+      // ---- Cerrar sesion ----
       OutlinedButton.icon(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
@@ -302,7 +306,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 letterSpacing: 2)),
       );
 
-  /// Campo de solo lectura (con el mismo aspecto que un campo de texto).
+  // Campo de solo lectura (con el mismo aspecto que un campo de texto).
   Widget _valor(String texto, {bool apagado = false, Widget? sufijo}) {
     return Container(
       width: double.infinity,

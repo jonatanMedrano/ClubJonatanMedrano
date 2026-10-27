@@ -41,6 +41,8 @@ class _AdminSedesScreenState extends State<AdminSedesScreen> {
     }
   }
 
+  // abre el formulario en una hoja inferior, sin sede es alta y con sede es edicion. al guardar recarga la
+  // lista y el catalogo del resto de la app
   Future<void> _abrir([Sede? sede]) async {
     final ok = await mostrarFormulario(context, _SedeForm(sede: sede));
     if (ok != true || !mounted) return;
@@ -49,6 +51,7 @@ class _AdminSedesScreenState extends State<AdminSedesScreen> {
     CatalogStore.instance.load();
   }
 
+  // pide confirmacion, y si la sede tiene canchas la api responde 409 y se muestra el motivo
   Future<void> _eliminar(Sede s) async {
     final ok = await confirmarPeligro(
       context,
@@ -128,6 +131,8 @@ class _SedeFormState extends State<_SedeForm> {
     super.dispose();
   }
 
+  // valida el formulario y manda el alta o la modificacion. si la api rechaza (nombre repetido, canchas fuera
+  // del nuevo horario) el mensaje se muestra dentro del formulario
   Future<void> _guardar() async {
     setState(() => _error = null);
     if (!_form.currentState!.validate()) return;

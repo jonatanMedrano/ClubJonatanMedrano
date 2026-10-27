@@ -15,11 +15,14 @@ log = logging.getLogger("club")
 router = APIRouter(prefix="/usuarios", tags=["Usuarios (con login)"])
 
 
+# se llama justo despues de registrarse en firebase. el uid sale del token y no del body, asi nadie puede crear
+# un perfil a nombre de otro
 @router.post("", response_model=UsuarioOut, status_code=201, summary="Crear mi perfil")
 def crear_perfil(data: UsuarioIn, token: dict = Depends(verificar_token),
                  db: Session = Depends(get_db)):
     if db.scalar(select(Usuario).where(Usuario.firebase_uid == token["uid"])):
         raise HTTPException(409, "Ya tenés un perfil creado.")
+    # dni, mail y uid no se pueden repetir, se controla antes para dar un mensaje claro
     if db.scalar(select(Usuario).where(Usuario.dni == data.dni)):
         raise HTTPException(409, "Ese DNI ya está registrado.")
     email = token.get("email") or data.email
@@ -33,6 +36,7 @@ def crear_perfil(data: UsuarioIn, token: dict = Depends(verificar_token),
     db.add(usuario)
     try:
         db.commit()
+    # si dos pedidos iguales llegan a la vez y pasan el control de arriba, la base los frena igual
     except IntegrityError:
         db.rollback()
         raise HTTPException(409, "El DNI o el correo ya están registrados.")
@@ -40,11 +44,13 @@ def crear_perfil(data: UsuarioIn, token: dict = Depends(verificar_token),
     return usuario
 
 
+# la app lo pide al abrir, trae es_admin para decidir si muestra el boton de gestion
 @router.get("/me", response_model=UsuarioOut, summary="Ver mi perfil")
 def ver_perfil(usuario: Usuario = Depends(get_usuario_actual)):
     return usuario
 
 
+# solo se pueden cambiar nombre, apellido y fecha de nacimiento, el dni y el mail no
 @router.put("/me", response_model=UsuarioOut, summary="Editar mi perfil")
 def editar_perfil(data: UsuarioUpdate, usuario: Usuario = Depends(get_usuario_actual),
                   db: Session = Depends(get_db)):
@@ -55,6 +61,7 @@ def editar_perfil(data: UsuarioUpdate, usuario: Usuario = Depends(get_usuario_ac
     return usuario
 
 
+# guarda el token del celular para poder mandarle notificaciones push
 @router.put("/me/fcm-token", status_code=204, summary="Guardar token de notificaciones")
 def guardar_fcm_token(data: FcmTokenIn, usuario: Usuario = Depends(get_usuario_actual),
                       db: Session = Depends(get_db)):
@@ -65,11 +72,13 @@ def guardar_fcm_token(data: FcmTokenIn, usuario: Usuario = Depends(get_usuario_a
     db.commit()
 
 
+# borra el perfil (y por cascade sus reservas) y despues la cuenta de firebase. si firebase falla solo queda en
+# el log
 @router.delete("/me", status_code=204, summary="Borrar mi cuenta")
 def borrar_cuenta(usuario: Usuario = Depends(get_usuario_actual),
                   db: Session = Depends(get_db)):
     uid = usuario.firebase_uid
-    db.delete(usuario)  # también borra sus reservas
+    db.delete(usuario)  # tambien borra sus reservas
     db.commit()
     try:
         fb_auth.delete_user(uid)

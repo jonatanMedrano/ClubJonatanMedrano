@@ -41,6 +41,7 @@ class _AdminDeportesScreenState extends State<AdminDeportesScreen> {
     }
   }
 
+  // abre el formulario, sin deporte es alta y con deporte es edicion
   Future<void> _abrir([Deporte? deporte]) async {
     final ok = await mostrarFormulario(context, _DeporteForm(deporte: deporte));
     if (ok != true || !mounted) return;
@@ -49,6 +50,7 @@ class _AdminDeportesScreenState extends State<AdminDeportesScreen> {
     CatalogStore.instance.load();
   }
 
+  // si el deporte tiene canchas la api responde 409 y se muestra el motivo
   Future<void> _eliminar(Deporte d) async {
     final ok = await confirmarPeligro(
       context,

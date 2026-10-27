@@ -13,6 +13,7 @@ from ..schemas import DeporteOut, EspacioOut, SedeOut
 router = APIRouter(tags=["Catálogo (sin login)"])
 
 
+# arma lo que devuelve la api con el nombre de la sede y del deporte ya resueltos
 def espacio_a_dict(e: Espacio) -> dict:
     return {
         "id": e.id, "nombre": e.nombre, "numero": e.numero, "subtipo": e.subtipo,
@@ -24,6 +25,7 @@ def espacio_a_dict(e: Espacio) -> dict:
     }
 
 
+# lista las sedes y con un solo group by calcula cuantas canchas y que deportes tiene cada una
 @router.get("/sedes", response_model=list[SedeOut], summary="Listar sedes")
 def listar_sedes(db: Session = Depends(get_db)):
     sedes = db.scalars(select(Sede).order_by(Sede.id)).all()
@@ -56,6 +58,7 @@ def listar_deportes(db: Session = Depends(get_db)):
 
 @router.get("/espacios", response_model=list[EspacioOut],
             summary="Listar canchas (filtrables por sede y deporte)")
+# canchas filtrables por sede y por deporte, los dos filtros son opcionales
 def listar_espacios(
     sede_id: Optional[int] = None,
     deporte_id: Optional[int] = None,
@@ -72,6 +75,8 @@ def listar_espacios(
 
 @router.get("/espacios/{espacio_id}/disponibilidad",
             summary="Horarios de una cancha para una fecha")
+# devuelve cada hora de la cancha para una fecha y si esta libre o no. no esta disponible si ya la reservaron
+# (solo cuentan las confirmadas) o si la hora ya paso
 def disponibilidad(espacio_id: int, fecha: date, db: Session = Depends(get_db)):
     espacio = db.get(Espacio, espacio_id)
     if espacio is None:
@@ -83,6 +88,7 @@ def disponibilidad(espacio_id: int, fecha: date, db: Session = Depends(get_db)):
             Reserva.estado == "confirmada",
         )
     ).all()
+    # horas ocupadas: una reserva de 2 horas ocupa dos casilleros
     ocupadas = {h for r in reservas for h in range(r.hora_inicio.hour, r.hora_fin.hour)}
     ahora = ahora_ar()
     horarios = []

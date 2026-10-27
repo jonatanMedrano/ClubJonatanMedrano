@@ -8,6 +8,7 @@ import 'firebase_options.dart'; // lo genera `flutterfire configure`
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 
+// antes de dibujar nada hay que iniciar firebase y leer el tema que eligio el usuario
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -15,6 +16,8 @@ Future<void> main() async {
   runApp(const ClubApp());
 }
 
+// la app en si: tema claro y oscuro, idioma espanol de argentina y la clave para mostrar avisos desde cualquier
+// pantalla
 class ClubApp extends StatelessWidget {
   const ClubApp({super.key});
 
@@ -38,6 +41,8 @@ class ClubApp extends StatelessWidget {
   }
 }
 
+// decide la primera pantalla escuchando a firebase: con sesion va al home y sin sesion al login. por eso al
+// iniciar o cerrar sesion la app cambia sola
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 

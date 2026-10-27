@@ -22,6 +22,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
+  // firebase manda el mail para cambiar la clave, no hay endpoint propio para esto
   Future<void> _enviar() async {
     setState(() => _error = null);
     if (!_form.currentState!.validate()) return;

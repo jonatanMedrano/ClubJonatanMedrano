@@ -7,7 +7,8 @@ import 'perfil_screen.dart';
 import 'reservas_screen.dart';
 import 'sedes_screen.dart';
 
-/// Contenedor con el menú inferior: Inicio, Sedes, Reservas y Perfil.
+// pantalla principal con las 4 pestanas (inicio, sedes, reservas, perfil) dentro de un IndexedStack, asi cada
+// una conserva su estado al cambiar
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
   @override
@@ -19,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     NavController.tab.value = 0;
-    // Se carga después del primer dibujo para no avisar cambios en pleno armado.
+    // Se carga despues del primer dibujo para no avisar cambios en pleno armado.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       UserStore.instance.load();
       CatalogStore.instance.load();
@@ -33,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
       valueListenable: NavController.tab,
+      // el boton atras vuelve primero a la pestana de inicio y recien despues cierra la app
       builder: (context, i, _) => PopScope(
         canPop: i == 0,
         onPopInvokedWithResult: (didPop, _) {

@@ -33,6 +33,7 @@ class _SedeDetalleScreenState extends State<SedeDetalleScreen> {
     _cargar();
   }
 
+  // trae las canchas de esta sede y deja elegido el primer deporte, o el que vino desde el inicio
   Future<void> _cargar() async {
     setState(() {
       _loading = true;
@@ -52,7 +53,7 @@ class _SedeDetalleScreenState extends State<SedeDetalleScreen> {
     if (mounted) setState(() => _loading = false);
   }
 
-  /// Deportes de la sede, en el orden en que vienen del servidor.
+  // Deportes de la sede, en el orden en que vienen del servidor.
   List<String> get _deportes {
     final out = <String>[];
     for (final e in _espacios) {
@@ -64,6 +65,7 @@ class _SedeDetalleScreenState extends State<SedeDetalleScreen> {
   List<Espacio> get _delDeporte =>
       _espacios.where((e) => e.deporte == _deporte).toList();
 
+  // el subtipo es la variante dentro de un deporte, por ejemplo futbol 5 o futbol 7
   List<String> get _subtipos {
     final out = <String>[];
     for (final e in _delDeporte) {
@@ -76,6 +78,8 @@ class _SedeDetalleScreenState extends State<SedeDetalleScreen> {
   List<Espacio> get _visibles =>
       _delDeporte.where((e) => _subtipo == null || e.subtipo == _subtipo).toList();
 
+  // abre la reserva pasando las canchas hermanas (mismo deporte y subtipo) para poder cambiar de cancha sin
+  // volver atras
   void _reservar(Espacio e) {
     final hermanas = _espacios
         .where((x) => x.deporteId == e.deporteId && x.subtipo == e.subtipo)
@@ -230,6 +234,7 @@ class _SedeDetalleScreenState extends State<SedeDetalleScreen> {
   }
 }
 
+// tarjeta de una cancha con precio, horario, indoor u outdoor e iluminacion
 class _CanchaCard extends StatelessWidget {
   final Espacio espacio;
   final VoidCallback onReservar;

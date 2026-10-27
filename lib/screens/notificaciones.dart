@@ -3,9 +3,9 @@ import '../core/theme.dart';
 import '../models/models.dart';
 import '../services/stores.dart';
 
-/// Cuadro emergente con el historial de avisos (la campana del inicio).
+// dialogo con el historial de avisos, se abre desde la campana del inicio. al abrirlo se marcan como leidos
 Future<void> mostrarNotificaciones(BuildContext context) {
-  // Guardamos cómo estaban (leídas / sin leer) antes de marcarlas.
+  // Guardamos como estaban (leidas / sin leer) antes de marcarlas.
   final items = List<AppNotif>.of(NotificationStore.instance.items);
   NotificationStore.instance.marcarLeidas();
 

@@ -13,8 +13,10 @@ from .models import Reserva
 log = logging.getLogger("club")
 
 
+# manda la notificacion por firebase cloud messaging. devuelve None si salio bien o el motivo del error, el
+# endpoint de prueba lo usa para ver que fallo
 def enviar_push_detalle(token: Optional[str], titulo: str, cuerpo: str) -> Optional[str]:
-    """Envía una notificación. Devuelve None si salió bien, o el motivo del error."""
+    # si no hay token es que el celular todavia no se registro
     if not token:
         return "El usuario todavía no registró un dispositivo."
     try:
@@ -31,15 +33,18 @@ def enviar_push_detalle(token: Optional[str], titulo: str, cuerpo: str) -> Optio
         return f"{type(e).__name__}: {e}"
 
 
+# lo mismo pero sin devolver nada: si falla solo queda en el log para no romper la accion del usuario
 def enviar_push(token: Optional[str], titulo: str, cuerpo: str) -> None:
-    """Igual que enviar_push_detalle, pero sin devolver nada (si falla, solo se registra)."""
+    # solo intenta enviar si hay token
     if token:
         enviar_push_detalle(token, titulo, cuerpo)
 
 
+# la ejecuta apscheduler cada 5 minutos. busca reservas confirmadas de hoy a dos dias y avisa cuando faltan 24
+# horas y cuando falta 1 hora. recordatorio_24h y recordatorio_1h se marcan al enviar para que no se repita
 def enviar_recordatorios() -> None:
-    """Corre cada 5 min: avisa 24 h y 1 h antes de cada reserva confirmada."""
     ahora = ahora_ar()
+    # sesion propia porque esto no corre dentro de un pedido de la api
     with SessionLocal() as db:
         reservas = db.scalars(
             select(Reserva)
@@ -51,8 +56,10 @@ def enviar_recordatorios() -> None:
             )
         ).all()
         for r in reservas:
+            # cuanto falta para que empiece la reserva
             falta = datetime.combine(r.fecha, r.hora_inicio) - ahora
             hora = r.hora_inicio.strftime("%H:%M")
+            # primero el aviso de 1 hora, y al mandarlo marco tambien el de 24 para que no salgan los dos
             if timedelta(0) < falta <= timedelta(hours=1) and not r.recordatorio_1h:
                 enviar_push(r.usuario.fcm_token, "¡Tu reserva es en 1 hora!",
                             f"{r.espacio.nombre} a las {hora} hs.")

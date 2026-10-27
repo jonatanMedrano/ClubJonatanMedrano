@@ -6,6 +6,8 @@ import '../services/stores.dart';
 import 'notificaciones.dart';
 import 'sede_detalle_screen.dart';
 
+// pestana de inicio: saludo, proxima reserva, filtro por deporte y listado de sedes. escucha a los cuatro
+// stores a la vez y se redibuja cuando cambia alguno
 class InicioScreen extends StatefulWidget {
   const InicioScreen({super.key});
   @override
@@ -15,6 +17,7 @@ class InicioScreen extends StatefulWidget {
 class _InicioScreenState extends State<InicioScreen> {
   String? _deporte; // null = todos
 
+  // al tirar hacia abajo se recargan todos los datos en paralelo
   Future<void> _refrescar() => Future.wait([
         CatalogStore.instance.load(),
         ReservasStore.instance.load(),
@@ -114,7 +117,7 @@ class _InicioScreenState extends State<InicioScreen> {
     );
   }
 
-  // ---------- Próxima reserva ----------
+  // ---------- Proxima reserva ----------
   Widget _proxima(BuildContext context) {
     final rs = ReservasStore.instance;
     if (rs.loading && !rs.loaded) {

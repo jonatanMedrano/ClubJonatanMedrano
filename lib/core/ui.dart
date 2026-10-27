@@ -6,11 +6,11 @@ import 'theme.dart';
 TextStyle kickerStyle(Color c) => TextStyle(
     color: c, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 3);
 
-/// Letra monoespaciada (para los nombres técnicos de las canchas).
+// Letra monoespaciada (para los nombres tecnicos de las canchas).
 TextStyle mono(Color color, {double size = 11}) =>
     GoogleFonts.jetBrainsMono(fontSize: size, color: color);
 
-/// Colores de respaldo cuando todavía no hay foto del deporte.
+// Colores de respaldo cuando todavia no hay foto del deporte.
 List<Color> coloresDeporte(String nombre) {
   final s = norm(nombre);
   if (s.contains('futbol')) return const [Color(0xFF1F6B35), Color(0xFF0B2E17)];
@@ -29,7 +29,7 @@ const _paletasSede = <List<Color>>[
 ];
 List<Color> coloresSede(int i) => _paletasSede[i % _paletasSede.length];
 
-/// Color de la etiqueta de cada deporte (distinto en modo día y noche).
+// Color de la etiqueta de cada deporte (distinto en modo dia y noche).
 Color colorDeporte(BuildContext c, String nombre) {
   final s = norm(nombre);
   final n = c.noche;
@@ -45,7 +45,7 @@ Color colorDeporte(BuildContext c, String nombre) {
   return c.muted;
 }
 
-/// Foto desde assets/images/<nombre>.jpg; si no existe, un degradé de color.
+// Foto desde assets/images/<nombre>.jpg; si no existe, un degrade de color.
 class FotoAsset extends StatelessWidget {
   final String nombre;
   final List<Color> colores;
@@ -75,7 +75,7 @@ class FotoAsset extends StatelessWidget {
   }
 }
 
-/// Encabezado con foto (o degradé), oscurecido y con degradé hacia el fondo.
+// Encabezado con foto (o degrade), oscurecido y con degrade hacia el fondo.
 class HeroHeader extends StatelessWidget {
   final String foto;
   final List<Color> colores;
@@ -130,7 +130,7 @@ class HeroHeader extends StatelessWidget {
   }
 }
 
-/// Caja con borde redondeado (tarjetas).
+// Caja con borde redondeado (tarjetas).
 class Panel extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -156,7 +156,7 @@ class Panel extends StatelessWidget {
   }
 }
 
-/// Etiqueta chica de color (Outdoor, Iluminada, deporte...).
+// Etiqueta chica de color (Outdoor, Iluminada, deporte...).
 class Tag extends StatelessWidget {
   final String texto;
   final Color color;
@@ -189,7 +189,7 @@ class Tag extends StatelessWidget {
   }
 }
 
-/// Botón tipo "píldora" que se marca al elegirlo.
+// Boton tipo "pildora" que se marca al elegirlo.
 class OpcionChip extends StatelessWidget {
   final String label;
   final bool selected;
@@ -235,7 +235,7 @@ class OpcionChip extends StatelessWidget {
   }
 }
 
-/// "MIS RESERVAS": primera palabra normal, segunda en verde.
+// "MIS RESERVAS": primera palabra normal, segunda en verde.
 class TituloPantalla extends StatelessWidget {
   final String blanco, verde;
   const TituloPantalla(this.blanco, this.verde, {super.key});
@@ -302,7 +302,8 @@ class EstadoVacio extends StatelessWidget {
   }
 }
 
-/// Cuadro "ZONA DE PELIGRO" para confirmar acciones que no se pueden deshacer.
+// dialogo rojo para confirmar cosas que no se pueden deshacer (cancelar reserva, borrar cuenta, eliminar).
+// devuelve true si el usuario confirma
 Future<bool> confirmarPeligro(
   BuildContext context, {
   required String titulo,

@@ -7,12 +7,14 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from .config import ahora_ar
 
 
+# los horarios siempre son en hora en punto, sin minutos
 def _en_punto(t: time) -> time:
     if t.minute or t.second:
         raise ValueError("debe ser una hora en punto")
     return t
 
 
+# lo que llega al crear o editar una sede
 class SedeIn(BaseModel):
     nombre: str = Field(min_length=1, max_length=80)
     direccion: str = Field(min_length=1, max_length=120)
@@ -24,6 +26,7 @@ class SedeIn(BaseModel):
     def _horas_en_punto(cls, v: time) -> time:
         return _en_punto(v)
 
+    # la apertura tiene que ser anterior al cierre
     @model_validator(mode="after")
     def _orden(self):
         if self.hora_apertura >= self.hora_cierre:
@@ -31,6 +34,7 @@ class SedeIn(BaseModel):
         return self
 
 
+# cantidad_canchas y deportes no son columnas, los calcula el router de catalogo
 class SedeOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
@@ -52,6 +56,7 @@ class DeporteOut(BaseModel):
     nombre: str
 
 
+# datos de una cancha: precio mayor a 0 y numero desde 1
 class EspacioIn(BaseModel):
     nombre: str = Field(min_length=1, max_length=120, description="Ej: Moron_Rivadavia_Futbol_F5_Cancha_1")
     sede_id: int
@@ -69,6 +74,7 @@ class EspacioIn(BaseModel):
     def _horas_en_punto(cls, v: time) -> time:
         return _en_punto(v)
 
+    # igual que en la sede, apertura antes que cierre
     @model_validator(mode="after")
     def _orden(self):
         if self.hora_apertura >= self.hora_cierre:
@@ -92,6 +98,8 @@ class EspacioOut(BaseModel):
     hora_cierre: time
 
 
+# perfil nuevo: el dni tiene que tener 7 u 8 digitos y la fecha de nacimiento no puede ser futura. el mail se
+# toma del token de firebase
 class UsuarioIn(BaseModel):
     nombre: str = Field(min_length=1, max_length=80)
     apellido: str = Field(min_length=1, max_length=80)
@@ -143,6 +151,7 @@ class FcmTokenIn(BaseModel):
     token: str = Field(min_length=10, max_length=300)
 
 
+# la hora en punto y la duracion de 1 o 2 horas se controlan en el endpoint de reservas
 class ReservaIn(BaseModel):
     espacio_id: int
     fecha: date
@@ -150,6 +159,7 @@ class ReservaIn(BaseModel):
     hora_fin: time = Field(description="Hora en punto, ej: 19:00")
 
 
+# proxima es true si esta confirmada y todavia no termino, la app lo usa para separar proximas de historial
 class ReservaOut(BaseModel):
     id: int
     espacio_id: int

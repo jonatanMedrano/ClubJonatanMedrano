@@ -16,14 +16,14 @@ const _meses = [
 String diaSem(DateTime d) => _dias[d.weekday - 1];
 String mesAbr(DateTime d) => _meses[d.month - 1];
 
-/// "sáb, 15 ago"
+// "sab, 15 ago"
 String fmtCorto(DateTime d) => '${diaSem(d)}, ${d.day} ${mesAbr(d)}';
 String fmtCortoIso(String iso) {
   final d = DateTime.tryParse(iso);
   return d == null ? iso : fmtCorto(d);
 }
 
-/// 3800 -> "$ 3.800"
+// 3800 -> "$ 3.800"
 String fmtPrecio(num n) {
   final s = n.round().toString();
   final b = StringBuffer();
@@ -34,7 +34,7 @@ String fmtPrecio(num n) {
   return '\$ $b';
 }
 
-/// 31234567 -> "31.234.567"
+// 31234567 -> "31.234.567"
 String fmtDni(String d) {
   final b = StringBuffer();
   for (var i = 0; i < d.length; i++) {
@@ -44,7 +44,7 @@ String fmtDni(String d) {
   return b.toString();
 }
 
-/// Minúsculas y sin tildes, para comparar nombres.
+// Minusculas y sin tildes, para comparar nombres.
 String norm(String s) => s
     .toLowerCase()
     .replaceAll('á', 'a')
@@ -55,7 +55,7 @@ String norm(String s) => s
     .replaceAll('ü', 'u')
     .replaceAll('ñ', 'n');
 
-/// "Ramos Mejía" -> "ramos_mejia"
+// "Ramos Mejia" -> "ramos_mejia"
 String slug(String s) => norm(s)
     .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
     .replaceAll(RegExp(r'^_+|_+$'), '');
@@ -70,6 +70,8 @@ String deporteEmoji(String nombre) {
   return '🏟️';
 }
 
+// las clases de este archivo son los datos que devuelve la api, cada una arma el objeto desde el json con
+// fromJson
 class Sede {
   final int id;
   final String nombre, direccion, apertura, cierre;
@@ -104,6 +106,7 @@ class Deporte {
       Deporte(j['id'] as int, str(j['nombre']));
 }
 
+// una cancha tal como la devuelve la api, con el nombre de su sede y de su deporte
 class Espacio {
   final int id, numero, sedeId, deporteId;
   final String nombre, sede, deporte, apertura, cierre;
@@ -142,17 +145,19 @@ class Espacio {
         iluminada: j['iluminada'] == true,
       );
 
-  /// "Fútbol 5", "Cemento", etc. Si no tiene subtipo, el nombre del deporte.
+  // "Futbol 5", "Cemento", etc. Si no tiene subtipo, el nombre del deporte.
   String get etiqueta => subtipo ?? deporte;
 }
 
-/// Una hora de una cancha para una fecha, y si se puede reservar.
+// Una hora de una cancha para una fecha, y si se puede reservar.
+// una hora de la cancha para un dia, con si esta libre o no
 class Franja {
   final int hora;
   final bool disponible;
   const Franja(this.hora, this.disponible);
 }
 
+// proximaApi es lo que calcula la api, si no viene se usa la hora del celular como respaldo
 class Reserva {
   final int id;
   final String espacio, sede, fecha, inicio, fin, estado;
@@ -177,12 +182,13 @@ class Reserva {
   bool get cancelada => estado.toLowerCase().startsWith('cancel');
   DateTime get inicioDt => DateTime.parse('${fecha}T$inicio:00');
   DateTime get finDt => DateTime.parse('${fecha}T$fin:00');
+  // una reserva es proxima si no esta cancelada y todavia no termino
   bool get proxima =>
       !cancelada && (proximaApi ?? finDt.isAfter(DateTime.now()));
   String get estadoLabel =>
       cancelada ? 'Cancelada' : (proxima ? 'Activa' : 'Completada');
 
-  /// "hoy", "mañana", "en 3 días"
+  // "hoy", "manana", "en 3 dias"
   String get enDias {
     final h = DateTime.now();
     final a = DateTime(h.year, h.month, h.day);
@@ -194,6 +200,7 @@ class Reserva {
   }
 }
 
+// esAdmin viene de la api y decide si el perfil muestra el boton de gestion
 class Usuario {
   final String nombre, apellido, dni, nacimiento, email;
   final bool esAdmin;

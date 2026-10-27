@@ -46,6 +46,7 @@ class _AdminCanchasScreenState extends State<AdminCanchasScreen> {
     }
   }
 
+  // no deja abrir el formulario si todavia no hay sedes ni deportes cargados
   Future<void> _abrir([Espacio? cancha]) async {
     if (_sedes.isEmpty || _deportes.isEmpty) {
       showMsg(context, 'Primero tiene que haber al menos una sede y un deporte.',
@@ -188,7 +189,8 @@ class _CanchaFormState extends State<_CanchaForm> {
     super.dispose();
   }
 
-  /// Si el nombre queda vacío se arma solo: Moron_Futbol_Futbol5_Cancha_1
+  // si el nombre tecnico queda vacio se arma solo con sede, deporte, tipo y numero, por ejemplo
+  // Moron_Futbol_Futbol5_Cancha_1
   String _nombreAutomatico(int numero) {
     final sede = widget.sedes.firstWhere((s) => s.id == _sedeId);
     final dep = widget.deportes.firstWhere((d) => d.id == _deporteId);
@@ -197,6 +199,8 @@ class _CanchaFormState extends State<_CanchaForm> {
         '${sub.isEmpty ? '' : '_${pascal(sub)}'}_Cancha_$numero';
   }
 
+  // aca solo se controla que la apertura sea anterior al cierre, que la cancha entre en el horario de la sede
+  // lo controla la api
   Future<void> _guardar() async {
     setState(() => _error = null);
     if (!_form.currentState!.validate()) return;

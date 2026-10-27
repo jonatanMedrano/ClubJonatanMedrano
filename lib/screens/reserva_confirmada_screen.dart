@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../services/stores.dart';
 
-/// "¡RESERVA CONFIRMADA!" y, a los 2 segundos, lleva a Mis reservas.
+// "RESERVA CONFIRMADA!" y, a los 2 segundos, lleva a Mis reservas.
 class ReservaConfirmadaScreen extends StatefulWidget {
   const ReservaConfirmadaScreen({super.key});
   @override

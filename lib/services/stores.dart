@@ -6,12 +6,14 @@ import '../core/errors.dart';
 import '../models/models.dart';
 import 'api_service.dart';
 
-/// Pestaña activa del menú inferior (0 Inicio, 1 Sedes, 2 Reservas, 3 Perfil).
+// pestana activa del menu de abajo: 0 inicio, 1 sedes, 2 reservas, 3 perfil. esta aca para poder cambiarla
+// desde cualquier pantalla
 class NavController {
   static final ValueNotifier<int> tab = ValueNotifier<int>(0);
 }
 
-/// Datos del usuario que inició sesión.
+// perfil del usuario logueado. las pantallas escuchan este objeto y se redibujan cuando cambia
+// (notifyListeners)
 class UserStore extends ChangeNotifier {
   UserStore._();
   static final UserStore instance = UserStore._();
@@ -41,7 +43,7 @@ class UserStore extends ChangeNotifier {
   }
 }
 
-/// Sedes y deportes (datos públicos).
+// sedes y deportes, datos publicos que se cargan una vez al abrir el home
 class CatalogStore extends ChangeNotifier {
   CatalogStore._();
   static final CatalogStore instance = CatalogStore._();
@@ -71,7 +73,7 @@ class CatalogStore extends ChangeNotifier {
   }
 }
 
-/// Reservas del usuario (próximas e historial).
+// reservas del usuario. proximas e historial salen del campo proxima que calcula la api
 class ReservasStore extends ChangeNotifier {
   ReservasStore._();
   static final ReservasStore instance = ReservasStore._();
@@ -89,6 +91,7 @@ class ReservasStore extends ChangeNotifier {
       items.where((r) => !r.proxima).toList()..sort((a, b) => _cmp(b, a));
   Reserva? get siguiente => proximas.isEmpty ? null : proximas.first;
 
+  // con silent en true recarga sin mostrar el cartel de carga, se usa despues de reservar o cancelar
   Future<void> load({bool silent = false}) async {
     if (!silent) {
       loading = true;
@@ -115,6 +118,7 @@ class ReservasStore extends ChangeNotifier {
   }
 }
 
+// un aviso del historial
 class AppNotif {
   final String titulo, cuerpo;
   final int ts;
@@ -131,7 +135,8 @@ class AppNotif {
   DateTime get fecha => DateTime.fromMillisecondsSinceEpoch(ts);
 }
 
-/// Historial de avisos de la app, guardado en el celular (uno por usuario).
+// historial de avisos de la campana. se guarda en el celular con shared_preferences, uno por usuario porque la
+// clave incluye el uid, y maximo 30
 class NotificationStore extends ChangeNotifier {
   NotificationStore._();
   static final NotificationStore instance = NotificationStore._();
@@ -166,6 +171,7 @@ class NotificationStore extends ChangeNotifier {
     } catch (_) {}
   }
 
+  // agrega al principio y deja como maximo 30 avisos
   Future<void> add(String titulo, String cuerpo) async {
     await load();
     items.insert(
@@ -182,7 +188,7 @@ class NotificationStore extends ChangeNotifier {
     await _guardar();
   }
 
-  /// Al cerrar sesión: vacía la memoria (los datos del usuario quedan guardados).
+  // al cerrar sesion se vacia la memoria, lo que esta guardado en el celular queda
   void clear() {
     items = [];
     _carga = null;

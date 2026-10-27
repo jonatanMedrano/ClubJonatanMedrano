@@ -14,6 +14,7 @@ from ..schemas import ReservaIn, ReservaOut
 router = APIRouter(prefix="/reservas", tags=["Reservas (con login)"])
 
 
+# pasa la reserva a diccionario. proxima = confirmada y que todavia no termino
 def reserva_a_dict(r: Reserva) -> dict:
     return {
         "id": r.id, "espacio_id": r.espacio_id,
@@ -32,19 +33,23 @@ def _cargar(db: Session, reserva_id: int) -> Reserva:
     ).one()
 
 
+# endpoint principal. los controles van en este orden: hora en punto, duracion, bloqueo, horario de la cancha,
+# que no sea pasado, superposicion en la cancha y superposicion del propio usuario
 @router.post("", response_model=ReservaOut, status_code=201, summary="Reservar una cancha")
 def crear_reserva(data: ReservaIn, usuario: Usuario = Depends(get_usuario_actual),
                   db: Session = Depends(get_db)):
     ini, fin = data.hora_inicio, data.hora_fin
 
+    # la app ya muestra solo horarios validos, pero se vuelve a controlar aca por si el pedido viene de otro
+    # cliente
     if ini.minute or ini.second or fin.minute or fin.second:
         raise HTTPException(400, "Los horarios deben empezar y terminar en hora en punto (ej: 18:00).")
     horas = fin.hour - ini.hour
     if horas not in (1, 2):
         raise HTTPException(400, "La reserva debe durar 1 o 2 horas.")
 
-    # Bloqueamos al usuario y luego a la cancha: si dos personas reservan lo mismo
-    # a la vez, la segunda espera y después ve el horario ocupado. Entra solo una.
+    # se bloquea primero al usuario y despues la cancha (with_for_update). si dos personas reservan lo mismo a
+    # la vez, la segunda espera, despues ve el horario ocupado y recibe 409
     db.execute(select(Usuario.id).where(Usuario.id == usuario.id).with_for_update())
     espacio = db.scalars(
         select(Espacio).where(Espacio.id == data.espacio_id).with_for_update()
@@ -63,6 +68,7 @@ def crear_reserva(data: ReservaIn, usuario: Usuario = Depends(get_usuario_actual
     if inicio_dt <= ahora:
         raise HTTPException(400, "No se puede reservar en un horario pasado.")
 
+    # dos reservas se pisan si una empieza antes de que termine la otra y termina despues de que empiece la otra
     solapa = (Reserva.estado == "confirmada", Reserva.fecha == data.fecha,
               Reserva.hora_inicio < fin, Reserva.hora_fin > ini)
     if db.scalar(select(Reserva.id).where(Reserva.espacio_id == espacio.id, *solapa).limit(1)):
@@ -75,7 +81,8 @@ def crear_reserva(data: ReservaIn, usuario: Usuario = Depends(get_usuario_actual
         usuario_id=usuario.id, espacio_id=espacio.id, fecha=data.fecha,
         hora_inicio=ini, hora_fin=fin, total=espacio.precio_hora * horas,
         estado="confirmada",
-        # Si se reserva con poca anticipación, no mandamos recordatorios que ya pasaron.
+        # si se reserva con poca anticipacion se marcan los recordatorios como enviados, para no mandar avisos
+        # de algo que ya paso
         recordatorio_24h=falta <= timedelta(hours=24),
         recordatorio_1h=falta <= timedelta(hours=1),
     )
@@ -86,6 +93,7 @@ def crear_reserva(data: ReservaIn, usuario: Usuario = Depends(get_usuario_actual
 
 @router.get("/mias", response_model=list[ReservaOut],
             summary="Mis reservas (próximas e historial)")
+# todas las reservas del usuario, las mas nuevas primero. la app las separa en proximas e historial
 def mis_reservas(usuario: Usuario = Depends(get_usuario_actual),
                  db: Session = Depends(get_db)):
     reservas = db.scalars(
@@ -99,6 +107,8 @@ def mis_reservas(usuario: Usuario = Depends(get_usuario_actual),
 
 @router.patch("/{reserva_id}/cancelar", response_model=ReservaOut,
               summary="Cancelar una reserva")
+# no borra nada, cambia el estado a cancelada. solo se puede cancelar una reserva propia, que no este cancelada
+# y que no haya terminado. el push va en segundo plano para no hacer esperar la respuesta
 def cancelar_reserva(reserva_id: int, bg: BackgroundTasks,
                      usuario: Usuario = Depends(get_usuario_actual),
                      db: Session = Depends(get_db)):

@@ -33,6 +33,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  // el selector no deja elegir una fecha futura
   Future<void> _elegirFecha() async {
     final d = await showDatePicker(
       context: context,
@@ -50,6 +51,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _obligatorio(String? v, String msg) =>
       (v == null || v.trim().isEmpty) ? msg : null;
 
+  // registro en dos pasos: primero se crea la cuenta en firebase y despues el perfil en la api (nombre, dni,
+  // fecha de nacimiento). si el segundo paso falla se borra la cuenta de firebase para no dejar usuarios sin
+  // perfil
   Future<void> _register() async {
     setState(() => _error = null);
     if (!_form.currentState!.validate()) return;
@@ -68,7 +72,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       NotificationService.init();
       if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } catch (e) {
-      // Si falló el perfil (ej. DNI repetido) no dejamos el usuario a medias.
+      // Si fallo el perfil (ej. DNI repetido) no dejamos el usuario a medias.
       try {
         await cred?.user?.delete();
       } catch (_) {}

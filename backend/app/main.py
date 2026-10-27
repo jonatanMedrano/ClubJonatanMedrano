@@ -18,18 +18,22 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("club")
 
 
+# esto corre una vez cuando arranca la api y otra cuando se apaga. aca se prepara todo: firebase, las tablas,
+# los datos iniciales y la tarea de recordatorios
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     iniciar_firebase()
     Base.metadata.create_all(bind=engine)  # crea las tablas si no existen
     migrar_columnas()
     # En Render (plan gratis) no hay Shell para correr el seed a mano:
-    # con AUTO_SEED=true carga sedes, deportes y canchas SOLO si la base está vacía.
+    # con AUTO_SEED=true carga sedes, deportes y canchas SOLO si la base esta vacia.
     if os.getenv("AUTO_SEED", "false").lower() == "true":
         try:
             cargar_datos_iniciales()
         except Exception:  # noqa: BLE001
             log.exception("No se pudieron cargar los datos iniciales")
+    # la tarea de recordatorios corre en segundo plano dentro de este mismo proceso, por eso si render duerme la
+    # api tampoco se mandan avisos
     scheduler = None
     if os.getenv("ENABLE_SCHEDULER", "true").lower() == "true":
         scheduler = BackgroundScheduler(timezone="America/Argentina/Buenos_Aires")
@@ -40,6 +44,7 @@ async def lifespan(app: FastAPI):
         scheduler.shutdown(wait=False)
 
 
+# swagger sale solo en /docs a partir de los routers y los schemas
 app = FastAPI(
     title="ClubJonatanMedrano API",
     description=(
@@ -51,6 +56,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# cors abierto para no tener problemas mientras desarrollo, en produccion habria que limitarlo al dominio real
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
                    allow_headers=["*"])
 
@@ -66,6 +72,8 @@ _MENSAJES = {
 }
 
 
+# pydantic devuelve los errores en ingles y en formato lista. aca los junto en un solo mensaje en castellano
+# para que la app lo muestre tal cual
 @app.exception_handler(RequestValidationError)
 async def datos_invalidos(request: Request, exc: RequestValidationError):
     partes = []
@@ -75,6 +83,7 @@ async def datos_invalidos(request: Request, exc: RequestValidationError):
     return JSONResponse(status_code=422, content={"detail": "Datos inválidos: " + "; ".join(partes)})
 
 
+# un router por tema: catalogo (publico), usuarios, reservas y admin
 app.include_router(catalogo.router)
 app.include_router(usuarios.router)
 app.include_router(reservas.router)
@@ -83,7 +92,7 @@ app.include_router(admin.router)
 
 @app.get("/health", include_in_schema=False)
 def health():
-    """Lo usan Render (health check) y el monitor que mantiene despierta la API."""
+    # lo usa render para saber que la api esta viva, y tambien un monitor externo para que no se duerma
     return {"status": "ok"}
 
 

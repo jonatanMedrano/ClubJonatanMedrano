@@ -3,18 +3,17 @@ import '../core/theme.dart';
 import '../core/ui.dart';
 import '../models/models.dart';
 
-/// "RamosMejía" -> "RamosMejia", "Fútbol 5" -> "Futbol5"
+// "RamosMejia" -> "RamosMejia", "Futbol 5" -> "Futbol5"
 String pascal(String s) => norm(s)
     .split(RegExp(r'[^a-z0-9]+'))
     .where((p) => p.isNotEmpty)
     .map((p) => p[0].toUpperCase() + p.substring(1))
     .join();
 
-/// Hora "08:00" -> 8
+// Hora "08:00" -> 8
 int horaDe(String hhmm) => int.tryParse(hhmm.split(':').first) ?? 8;
 
-/// Abre un formulario como hoja que sube desde abajo.
-/// Devuelve true si se guardó algo.
+// abre un formulario en una hoja que sube desde abajo, devuelve true si se guardo algo
 Future<bool?> mostrarFormulario(BuildContext context, Widget form) {
   return showModalBottomSheet<bool>(
     context: context,
@@ -31,7 +30,7 @@ Future<bool?> mostrarFormulario(BuildContext context, Widget form) {
   );
 }
 
-/// Estructura común de los formularios: título, campos, error y botón guardar.
+// Estructura comun de los formularios: titulo, campos, error y boton guardar.
 class FormSheet extends StatelessWidget {
   final String titulo;
   final List<Widget> children;
@@ -104,7 +103,7 @@ class FormSheet extends StatelessWidget {
   }
 }
 
-/// Lista desplegable con el mismo aspecto que un campo de texto.
+// Lista desplegable con el mismo aspecto que un campo de texto.
 class CampoSelect<T> extends StatelessWidget {
   final String label;
   final T? value;
@@ -137,7 +136,7 @@ class CampoSelect<T> extends StatelessWidget {
   }
 }
 
-/// Selector de hora en punto (00:00 a 23:00).
+// Selector de hora en punto (00:00 a 23:00).
 class CampoHora extends StatelessWidget {
   final String label;
   final int value;
@@ -165,7 +164,7 @@ class CampoHora extends StatelessWidget {
   }
 }
 
-/// Tarjeta de un elemento de la lista, con botones de editar y eliminar.
+// Tarjeta de un elemento de la lista, con botones de editar y eliminar.
 class AdminItem extends StatelessWidget {
   final String emoji, titulo;
   final String? subtitulo, detalle;
@@ -229,7 +228,7 @@ class AdminItem extends StatelessWidget {
   }
 }
 
-/// Pantalla de lista con botón "Agregar" (base de las tres gestiones).
+// Pantalla de lista con boton "Agregar" (base de las tres gestiones).
 class AdminListaScaffold extends StatelessWidget {
   final String blanco, verde, textoAgregar, vacio;
   final bool loading;

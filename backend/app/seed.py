@@ -1,7 +1,6 @@
-"""Carga sedes, deportes y las 22 canchas del diseño.
-Uso:   python -m app.seed           (solo si la base está vacía)
-       python -m app.seed --reset   (reemplaza sedes, canchas y reservas; conserva usuarios)
-"""
+# carga las 4 sedes, los 5 deportes y las 22 canchas
+# python -m app.seed           solo si la base esta vacia
+# python -m app.seed --reset   reemplaza sedes, canchas y reservas, los usuarios se quedan
 import sys
 from datetime import time
 from decimal import Decimal
@@ -14,7 +13,7 @@ from .models import Deporte, Espacio, Reserva, Sede
 DEPORTES = ["Fútbol", "Tenis", "Hockey", "Vóley", "Golf"]
 SLUG = {"Fútbol": "Futbol", "Tenis": "Tenis", "Hockey": "Hockey", "Vóley": "Voley", "Golf": "Golf"}
 
-# (deporte, subtipo, slug, nº, indoor, iluminada, precio/h, apertura, cierre)
+# cada cancha: (deporte, subtipo, slug, numero, indoor, iluminada, precio por hora, apertura, cierre)
 SEDES = [
     ("Morón", "Moron_Rivadavia", "Av. Rivadavia 17500", [
         ("Fútbol", "Fútbol 5", "F5", 1, False, True, 3800, 8, 23),
@@ -49,6 +48,8 @@ SEDES = [
 ]
 
 
+# el horario de cada sede es el mas amplio de sus canchas (apertura minima y cierre maximo), asi las canchas
+# siempre entran en el horario de la sede
 def main(reset: bool = False) -> None:
     Base.metadata.create_all(bind=engine)
     migrar_columnas()

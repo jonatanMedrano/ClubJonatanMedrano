@@ -5,6 +5,8 @@ import '../models/models.dart';
 import '../services/stores.dart';
 import 'sede_detalle_screen.dart';
 
+// lista de todas las sedes. maneja los estados de carga, error con reintento y lista vacia, y al tocar una sede
+// abre su detalle
 class SedesScreen extends StatelessWidget {
   const SedesScreen({super.key});
 
@@ -93,6 +95,8 @@ class SedesScreen extends StatelessWidget {
   }
 }
 
+// tarjeta de una sede: foto, direccion, horario, cantidad de canchas y deportes. si no hay foto en assets se
+// usa un degradado
 class _SedeCard extends StatelessWidget {
   final Sede sede;
   final int indice;

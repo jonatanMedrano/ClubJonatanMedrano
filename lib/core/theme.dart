@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Toda la estética vive acá. Cambiando estos colores cambia toda la app.
+// la paleta esta toda aca, si se cambia un color cambia en toda la app
 class AppColors {
   // Se mantienen por compatibilidad con las pantallas anteriores.
   static const primary = Color(0xFF1B8A4B);
@@ -20,7 +20,7 @@ class AppColors {
   static const indigoNoche = Color(0xFF9AA2FF);
 }
 
-/// Atajos de color según el modo (día / noche) activo.
+// Atajos de color segun el modo (dia / noche) activo.
 extension ThemeX on BuildContext {
   bool get noche => Theme.of(this).brightness == Brightness.dark;
   Color get verde => Theme.of(this).colorScheme.primary;
@@ -35,7 +35,7 @@ extension ThemeX on BuildContext {
       noche ? Colors.white.withAlpha(18) : const Color(0xFFEFF2F0);
 }
 
-/// Estilo de títulos: condensado y en negrita.
+// Estilo de titulos: condensado y en negrita.
 TextStyle tituloStyle(BuildContext c, {double size = 32, Color? color}) =>
     GoogleFonts.barlowCondensed(
       fontSize: size,
@@ -49,8 +49,8 @@ OutlineInputBorder _borde(Color c, [double w = 1]) => OutlineInputBorder(
     borderRadius: BorderRadius.circular(14),
     borderSide: BorderSide(color: c, width: w));
 
-/// Aplica la fuente Inter a cada estilo del texto. Se hace a mano porque
-/// GoogleFonts.interTextTheme usa otro tipo de TextTheme en las versiones nuevas.
+// Aplica la fuente Inter a cada estilo del texto. Se hace a mano porque
+// GoogleFonts.interTextTheme usa otro tipo de TextTheme en las versiones nuevas.
 TextTheme _conInter(TextTheme t) {
   TextStyle? f(TextStyle? s) =>
       s == null ? null : GoogleFonts.inter(textStyle: s);
@@ -73,6 +73,7 @@ TextTheme _conInter(TextTheme t) {
   );
 }
 
+// arma el tema material 3 completo: uno de dia (verde sobre blanco) y otro de noche (negro con verde y blanco)
 ThemeData buildTheme(Brightness b) {
   final noche = b == Brightness.dark;
   final verde = noche ? AppColors.verdeNoche : AppColors.verdeDia;
@@ -134,7 +135,8 @@ ThemeData buildTheme(Brightness b) {
   );
 }
 
-/// Guarda si el usuario eligió modo día, noche o el del sistema.
+// modo claro, oscuro o el del sistema. se guarda con shared_preferences para que se mantenga al volver a abrir
+// la app
 class ThemeController extends ChangeNotifier {
   ThemeController._();
   static final ThemeController instance = ThemeController._();

@@ -18,6 +18,8 @@ log = logging.getLogger("club")
 bearer = HTTPBearer(auto_error=False)
 
 
+# carga la credencial de la cuenta de servicio. en render viene como texto en una variable de entorno, en mi pc
+# se lee del archivo json
 def iniciar_firebase() -> bool:
     if firebase_admin._apps:
         return True
@@ -38,10 +40,12 @@ def iniciar_firebase() -> bool:
         return False
 
 
+# primer paso de cualquier endpoint con login: toma el token del header Authorization y le pide a firebase que
+# lo valide. sin token o vencido responde 401
 def verificar_token(
     cred: Optional[HTTPAuthorizationCredentials] = Depends(bearer),
 ) -> dict:
-    """Verifica contra Firebase el token que manda la app. Devuelve uid y email."""
+    # devuelve el contenido del token (uid, email) si firebase lo da por bueno
     if cred is None:
         raise HTTPException(401, "Necesitás iniciar sesión.")
     if not firebase_admin._apps:
@@ -52,6 +56,7 @@ def verificar_token(
         raise HTTPException(401, "Sesión inválida o vencida. Volvé a iniciar sesión.")
 
 
+# segundo paso: con el uid que viene en el token busca el perfil en la base. si todavia no lo creo responde 404
 def get_usuario_actual(
     token: dict = Depends(verificar_token), db: Session = Depends(get_db)
 ) -> Usuario:
@@ -61,6 +66,8 @@ def get_usuario_actual(
     return usuario
 
 
+# tercer paso, solo para /admin: el admin es el usuario cuyo mail coincide con ADMIN_EMAIL, cualquier otro
+# recibe 403
 def get_admin(usuario: Usuario = Depends(get_usuario_actual)) -> Usuario:
     if not usuario.es_admin:
         raise HTTPException(403, "Solo el administrador puede realizar esta acción.")

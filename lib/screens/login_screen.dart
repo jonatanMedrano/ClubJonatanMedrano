@@ -26,6 +26,8 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // valida el formulario y entra con firebase. si el mail o la clave estan mal se muestra en el formulario, si
+  // es un problema de red sale el dialogo
   Future<void> _login() async {
     setState(() => _error = null);
     if (!_form.currentState!.validate()) return;

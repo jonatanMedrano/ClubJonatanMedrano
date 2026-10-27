@@ -7,6 +7,7 @@ final messengerKey = GlobalKey<ScaffoldMessengerState>();
 
 enum TipoError { conexion, servidor, otro }
 
+// clasifica el error: sin conexion, servidor caido u otro. segun eso se muestra un dialogo o un aviso
 TipoError tipoError(Object e) {
   if (e is ApiException) {
     if (e.esConexion) return TipoError.conexion;
@@ -18,6 +19,8 @@ TipoError tipoError(Object e) {
   return TipoError.otro;
 }
 
+// pasa cualquier excepcion a un mensaje en castellano. los errores de firebase vienen con codigos en ingles y
+// aca se traducen
 String errorMessage(Object e) {
   if (e is ApiException) return e.message;
   if (e is FirebaseAuthException) {
@@ -43,6 +46,7 @@ String errorMessage(Object e) {
   return 'Ocurrió un error inesperado. Intentá de nuevo.';
 }
 
+// aviso corto abajo, rojo si es un error
 void showMsg(BuildContext c, String m, {bool error = false}) {
   ScaffoldMessenger.of(c).showSnackBar(SnackBar(
     content: Text(m),
@@ -50,7 +54,7 @@ void showMsg(BuildContext c, String m, {bool error = false}) {
   ));
 }
 
-/// Cuadro de diálogo de error (siempre oscuro, como en el diseño).
+// Cuadro de dialogo de error (siempre oscuro, como en el diseno).
 Future<void> showErrorDialog(BuildContext context, TipoError tipo) {
   final conexion = tipo == TipoError.conexion;
   return showDialog<void>(
@@ -87,7 +91,7 @@ Future<void> showErrorDialog(BuildContext context, TipoError tipo) {
   );
 }
 
-/// Muestra el error más adecuado: diálogo si es de red/servidor, aviso si no.
+// Muestra el error mas adecuado: dialogo si es de red/servidor, aviso si no.
 void mostrarError(BuildContext context, Object e) {
   final t = tipoError(e);
   if (t == TipoError.otro) {

@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'theme.dart';
 
-/// Fondo de las pantallas de acceso (siempre oscuro, como en el diseño).
-/// Si existe assets/images/login_bg.jpg se usa como foto de fondo.
+// Fondo de las pantallas de acceso (siempre oscuro, como en el diseno).
+// Si existe assets/images/login_bg.jpg se usa como foto de fondo.
 class AuthScaffold extends StatelessWidget {
   final Widget child;
   const AuthScaffold({super.key, required this.child});
@@ -57,7 +57,7 @@ class _FondoDefault extends StatelessWidget {
   }
 }
 
-/// "BIENVENIDO A / CLUB JONATAN MEDRANO"
+// "BIENVENIDO A / CLUB JONATAN MEDRANO"
 class AuthTitle extends StatelessWidget {
   final String kicker, blanco, verde;
   final String? subtitulo;
@@ -90,7 +90,7 @@ class AuthTitle extends StatelessWidget {
   }
 }
 
-/// Campo de texto de las pantallas de acceso, con la etiqueta arriba.
+// Campo de texto de las pantallas de acceso, con la etiqueta arriba.
 class AuthField extends StatefulWidget {
   final String? label;
   final String? hint;
@@ -159,7 +159,7 @@ class _AuthFieldState extends State<AuthField> {
   }
 }
 
-/// Mensaje de error en rojo, dentro del formulario.
+// Mensaje de error en rojo, dentro del formulario.
 class AuthBanner extends StatelessWidget {
   final String texto;
   const AuthBanner(this.texto, {super.key});
@@ -183,7 +183,7 @@ class AuthBanner extends StatelessWidget {
   }
 }
 
-/// Botón "‹ Volver" de las pantallas de acceso.
+// Boton "< Volver" de las pantallas de acceso.
 class AuthBack extends StatelessWidget {
   const AuthBack({super.key});
   @override

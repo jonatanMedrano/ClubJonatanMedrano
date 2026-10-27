@@ -13,8 +13,9 @@ class ReservasScreen extends StatefulWidget {
 }
 
 class _ReservasScreenState extends State<ReservasScreen> {
-  int _tab = 0; // 0 próximas, 1 historial
+  int _tab = 0; // 0 proximas, 1 historial
 
+  // pide confirmacion, cancela en la api y recarga sin cartel de carga. el horario queda libre para otros
   Future<void> _cancelar(Reserva r) async {
     final ok = await confirmarPeligro(
       context,
@@ -142,6 +143,7 @@ class _Pestanas extends StatelessWidget {
   }
 }
 
+// tarjeta de una reserva, el boton cancelar solo aparece si se le pasa onCancelar
 class _ReservaCard extends StatelessWidget {
   final Reserva reserva;
   final VoidCallback? onCancelar;

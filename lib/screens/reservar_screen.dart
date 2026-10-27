@@ -13,6 +13,8 @@ class _Slot {
   const _Slot(this.hora, this.libre);
 }
 
+// pantalla de reserva: se elige cancha, dia (14 dias), duracion (1 o 2 horas) y horario. la disponibilidad
+// viene de la api y la grilla se arma aca
 class ReservarScreen extends StatefulWidget {
   final Espacio espacio;
   final List<Espacio> hermanas; // canchas del mismo deporte y subtipo
@@ -42,6 +44,8 @@ class _ReservarScreenState extends State<ReservarScreen> {
     _cargar();
   }
 
+  // pide a la api las horas de la cancha para el dia elegido, se vuelve a llamar cada vez que cambia la cancha
+  // o el dia
   Future<void> _cargar() async {
     setState(() {
       _loading = true;
@@ -56,7 +60,8 @@ class _ReservarScreenState extends State<ReservarScreen> {
     if (mounted) setState(() => _loading = false);
   }
 
-  /// Horarios posibles según la duración elegida.
+  // horarios que se pueden elegir segun la duracion: para 2 horas tienen que estar libres la hora de inicio y
+  // la siguiente, y no se puede pasar del cierre
   List<_Slot> get _slots {
     if (_franjas.isEmpty) return [];
     final libre = {for (final f in _franjas) f.hora: f.disponible};
@@ -73,6 +78,9 @@ class _ReservarScreenState extends State<ReservarScreen> {
     return out;
   }
 
+  // manda la reserva a la api. si sale bien se guarda un aviso, se recarga la lista y se muestra la
+  // confirmacion. si falla (por ejemplo alguien reservo antes) se muestra el motivo y se recarga la
+  // disponibilidad
   Future<void> _confirmar() async {
     final inicio = _inicio;
     if (inicio == null) return;
@@ -89,7 +97,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
     } catch (e) {
       if (!mounted) return;
       mostrarError(context, e);
-      _cargar(); // por si alguien ocupó el horario mientras tanto
+      _cargar(); // por si alguien ocupo el horario mientras tanto
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -216,7 +224,7 @@ class _ReservarScreenState extends State<ReservarScreen> {
         ),
       ),
 
-      // ---- Duración ----
+      // ---- Duracion ----
       _etiqueta('DURACIÓN'),
       Container(
         padding: const EdgeInsets.all(4),

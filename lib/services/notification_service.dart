@@ -4,9 +4,11 @@ import '../core/errors.dart';
 import 'api_service.dart';
 import 'stores.dart';
 
+// pide permiso, obtiene el token del dispositivo y se lo manda a la api para que pueda enviar push
 class NotificationService {
   static bool _listening = false;
 
+  // se llama al abrir el home y despues de registrarse
   static Future<void> init() async {
     try {
       final fm = FirebaseMessaging.instance;
@@ -29,7 +31,7 @@ class NotificationService {
         ));
       });
 
-      // Si tocó la notificación del sistema, la agregamos al historial.
+      // Si toco la notificacion del sistema, la agregamos al historial.
       FirebaseMessaging.onMessageOpenedApp.listen((m) {
         final n = m.notification;
         if (n == null) return;

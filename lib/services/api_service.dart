@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import '../core/config.dart';
 import '../models/models.dart';
 
+// error propio con el mensaje listo para mostrar y el codigo http. sirve para distinguir problemas de conexion,
+// de servidor y de datos
 class ApiException implements Exception {
   final String message;
   final int? status;
@@ -20,9 +22,11 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-/// Todas las llamadas al backend FastAPI. Si una ruta de tu API se llama
-/// distinto, se cambia SOLO acá.
+// todas las llamadas al backend estan juntas aca. las pantallas nunca usan http directo, si cambia una ruta se
+// corrige solo en este archivo
 class Api {
+  // metodo base de todas las llamadas: arma la url, agrega el token de firebase en el header Authorization,
+  // corta a los 60 segundos y convierte cualquier falla en ApiException
   static Future<dynamic> _send(String method, String path,
       {Map<String, String>? query, Object? body, bool auth = true}) async {
     var uri = Uri.parse('${Config.baseUrl}$path');
@@ -69,6 +73,7 @@ class Api {
     }
   }
 
+  // elige que mensaje mostrar: 401 sesion vencida, 5xx servidor caido y si no el campo detail que manda la api
   static String _mensaje(int code, dynamic data) {
     if (code == 401) return 'Tu sesión expiró. Volvé a iniciar sesión.';
     if (code >= 500) return 'El servidor no está disponible. Intentá más tarde.';
@@ -85,7 +90,7 @@ class Api {
   static List<Map<String, dynamic>> _list(dynamic d) =>
       (d as List).cast<Map<String, dynamic>>();
 
-  // ---------- Públicos ----------
+  // ---------- Publicos ----------
   static Future<List<Sede>> sedes() async =>
       _list(await _send('GET', '/sedes', auth: false))
           .map(Sede.fromJson)
@@ -105,7 +110,7 @@ class Api {
         .toList();
   }
 
-  /// Todas las horas de la cancha para una fecha, con su disponibilidad.
+  // Todas las horas de la cancha para una fecha, con su disponibilidad.
   static Future<List<Franja>> disponibilidad(int espacioId, String fecha) async {
     final d = await _send('GET', '/espacios/$espacioId/disponibilidad',
         query: {'fecha': fecha}, auth: false);
@@ -121,6 +126,7 @@ class Api {
   }
 
   // ---------- Con login ----------
+  // desde aca para abajo son endpoints con login: se manda el token de firebase y la api sabe quien es
   static Future<void> crearPerfil(Map<String, dynamic> body) =>
       _send('POST', '/usuarios', body: body);
 
@@ -150,7 +156,7 @@ class Api {
   static Future<void> guardarFcmToken(String token) =>
       _send('PUT', '/usuarios/me/fcm-token', body: {'token': token});
 
-  // ---------- Administración (solo el usuario admin) ----------
+  // ---------- Administracion (solo el usuario admin) ----------
   // id == null -> crear (POST); id != null -> modificar (PUT).
   static Future<void> _guardarAdmin(
           String ruta, int? id, Map<String, dynamic> body) =>

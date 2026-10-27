@@ -14,10 +14,12 @@ from ..schemas import (DeporteIn, DeporteOut, EspacioIn, EspacioOut, SedeIn,
 from .catalogo import espacio_a_dict
 from .reservas import reserva_a_dict
 
+# todo este router pide get_admin, por eso no hace falta repetirlo en cada endpoint
 router = APIRouter(prefix="/admin", tags=["Administración (solo admin)"],
                    dependencies=[Depends(get_admin)])
 
 
+# hace el commit y si la base rechaza por un valor repetido devuelve 409 con el mensaje que le pasan
 def _guardar(db: Session, mensaje_duplicado: str) -> None:
     try:
         db.commit()
@@ -26,6 +28,7 @@ def _guardar(db: Session, mensaje_duplicado: str) -> None:
         raise HTTPException(409, mensaje_duplicado)
 
 
+# busca por id y devuelve 404 si no existe
 def _obtener(db: Session, modelo, id_: int, nombre: str):
     obj = db.get(modelo, id_)
     if obj is None:
@@ -66,6 +69,7 @@ def modificar_sede(sede_id: int, data: SedeIn, db: Session = Depends(get_db)):
     return sede
 
 
+# una sede con canchas no se puede borrar
 @router.delete("/sedes/{sede_id}", status_code=204, summary="Eliminar sede")
 def eliminar_sede(sede_id: int, db: Session = Depends(get_db)):
     sede = _obtener(db, Sede, sede_id, "La sede")
@@ -94,6 +98,7 @@ def modificar_deporte(deporte_id: int, data: DeporteIn, db: Session = Depends(ge
     return dep
 
 
+# un deporte con canchas asociadas no se puede borrar
 @router.delete("/deportes/{deporte_id}", status_code=204, summary="Eliminar deporte")
 def eliminar_deporte(deporte_id: int, db: Session = Depends(get_db)):
     dep = _obtener(db, Deporte, deporte_id, "El deporte")
@@ -104,6 +109,8 @@ def eliminar_deporte(deporte_id: int, db: Session = Depends(get_db)):
 
 
 # ---------------- Canchas ----------------
+# valida que existan la sede y el deporte y que la cancha quede dentro del horario de su sede. lo usan crear y
+# modificar
 def _aplicar_espacio(e: Espacio, data: EspacioIn, db: Session) -> None:
     sede = _obtener(db, Sede, data.sede_id, "La sede")
     _obtener(db, Deporte, data.deporte_id, "El deporte")
@@ -141,6 +148,7 @@ def modificar_espacio(espacio_id: int, data: EspacioIn, db: Session = Depends(ge
     return _espacio_out(db, e.id)
 
 
+# una cancha con reservas no se puede borrar, queda el historial
 @router.delete("/espacios/{espacio_id}", status_code=204, summary="Eliminar cancha")
 def eliminar_espacio(espacio_id: int, db: Session = Depends(get_db)):
     e = _obtener(db, Espacio, espacio_id, "La cancha")
@@ -151,6 +159,7 @@ def eliminar_espacio(espacio_id: int, db: Session = Depends(get_db)):
 
 
 # ---------------- Consultas ----------------
+# consultas para el panel, solo lectura
 @router.get("/usuarios", response_model=list[UsuarioOut], summary="Listar usuarios")
 def listar_usuarios(db: Session = Depends(get_db)):
     return db.scalars(select(Usuario).order_by(Usuario.id)).all()
@@ -170,6 +179,7 @@ def listar_reservas(db: Session = Depends(get_db)):
 # ---------------- Pruebas de notificaciones ----------------
 @router.post("/notificaciones/probar",
              summary="Enviar una notificación de prueba a mi propio celular")
+# manda un push de prueba al celular del propio admin, sirve para verificar que firebase y el token andan
 def probar_notificacion(admin: Usuario = Depends(get_admin)):
     error = enviar_push_detalle(
         admin.fcm_token, "Notificación de prueba",
@@ -181,6 +191,7 @@ def probar_notificacion(admin: Usuario = Depends(get_admin)):
 
 @router.post("/recordatorios/ejecutar",
              summary="Ejecutar ahora el aviso de recordatorios (sin esperar 5 minutos)")
+# corre ya mismo el chequeo de recordatorios sin esperar los 5 minutos, util para probar
 def ejecutar_recordatorios():
     enviar_recordatorios()
     return {"mensaje": "Recordatorios procesados."}

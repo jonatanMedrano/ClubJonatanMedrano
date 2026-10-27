@@ -5,7 +5,9 @@ import 'admin_canchas_screen.dart';
 import 'admin_deportes_screen.dart';
 import 'admin_sedes_screen.dart';
 
-/// Panel del administrador: tres accesos a las gestiones.
+// Panel del administrador: tres accesos a las gestiones.
+// menu de gestion, solo se llega desde el perfil si el usuario es admin. la api igual vuelve a controlar el
+// permiso en cada llamada
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
 
